@@ -3,6 +3,12 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import edu.stanford.cs276.util.Pair;
 
 public class RunCorrector {
 
@@ -75,9 +81,22 @@ public class RunCorrector {
 		while ((query = queriesFileReader.readLine()) != null) {
 			
 			String correctedQuery = query;
-			/*
-			 * Your code here
-			 */
+			CandidateGenerator cg = CandidateGenerator.get();
+			// Generate candidates
+			Set<String> candidates = cg.getCandidates(query, LanguageModel.trigramDict);
+			double maxProbability = 0;
+			// Find that candidate that produces the max languageModel * noisyChannelModel probability
+			for (String candidate : candidates) {
+				int distance = calculateEditDistance(query, candidate);
+				if (distance <= 2) {
+					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate, distance);
+					probability += LanguageModel.calculateQueryProbability(candidate);
+					if (probability > maxProbability) {
+						maxProbability = probability;
+						correctedQuery = candidate;
+					}
+				}
+			}
 			
 			
 			if ("extra".equals(extra)) {
@@ -106,5 +125,34 @@ public class RunCorrector {
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		// System.out.println("RUNNING TIME: "+totalTime/1000+" seconds ");
+	}
+	
+	// Calculate Levenshtein Distance between two strings
+	private static int calculateEditDistance(String start, String end) {
+		return editDistanceDynamic(start, start.length(), end, end.length(), new HashMap<Pair<String, String>, Integer>());
+		
+	}
+	
+	// Derived from pseudo-code from lecture and Wikipedia
+	private static int editDistanceDynamic(String start, int sLength, String end, int eLength, Map<Pair<String, String>, Integer> savedDistances) {
+		if (sLength == 0) return eLength;
+		if (eLength == 0) return sLength;
+		
+		Pair<String, String> s_e = new Pair<String, String>(start, end);
+		Pair<String, String> e_s = new Pair<String, String>(end, start);
+		if (savedDistances.containsKey(s_e)) return savedDistances.get(s_e);
+		if (savedDistances.containsKey(e_s)) return savedDistances.get(e_s);
+		
+		int cost = 1;
+		if (start.charAt(sLength - 1) == end.charAt(eLength - 1)) cost = 0;
+		
+		int editDistance =  Math.min(Math.min(editDistanceDynamic(start, sLength-1, end, eLength, savedDistances) + 1, 
+												editDistanceDynamic(start, sLength, end, eLength-1, savedDistances) + 1),
+												editDistanceDynamic(start, sLength-1, end, eLength-1, savedDistances) + cost);
+		savedDistances.put(s_e, editDistance);
+		savedDistances.put(e_s, editDistance);
+		
+		return editDistance;
+		
 	}
 }

@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class NoisyChannelModel implements Serializable {
 	
 	private static NoisyChannelModel ncm_ = null;
-	EditCostModel ecm_ = null;
+	static EditCostModel ecm_ = null;
 
 	EmpiricalCostModel empiricalCostModel = null;
 	UniformCostModel uniformCostModel = null;
@@ -19,6 +19,15 @@ public class NoisyChannelModel implements Serializable {
 	 * 
 	 * Your code here ...
 	 */
+	
+	// Wrapper for EditCostModel editProbability calculation
+	public static double calculateCandidateProbability(String original, String R, int distance) throws Exception {
+		if (ecm_ != null) {
+			return ecm_.editProbability(original, R, distance);
+		} else {
+			throw new Exception("Probability type has not been set!");
+		}
+	}
 	
 	// Don't call the constructor directly (singleton instance)
 	private NoisyChannelModel(String editsFile) throws Exception {

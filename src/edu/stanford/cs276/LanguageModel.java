@@ -10,8 +10,10 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import edu.stanford.cs276.util.Dictionary;
@@ -69,7 +71,7 @@ public class LanguageModel implements Serializable {
 	// Added a trigram (char, not word) dictionary to help with candidate generation
 	// Maps trigram to all words containing that trigram in document set
 	// e.g. "app" -> ["apple","apples","applicant","application",...]
-	static Map<String, List<String>> trigramDict = new HashMap<String, List<String>>();
+	static Map<String, Set<String>> trigramDict = new HashMap<String, Set<String>>();
 	
 	// Do not call constructor directly since this is a Singleton
 	private LanguageModel(String corpusFilePath) throws Exception {
@@ -128,9 +130,9 @@ public class LanguageModel implements Serializable {
 						trigramDict.get(trigram).add(word);
 					}
 				} else {
-					ArrayList<String> newList = new ArrayList<String>();
-					newList.add(word);
-					trigramDict.put(trigram, newList);
+					Set<String> newSet = new HashSet<String>();
+					newSet.add(word);
+					trigramDict.put(trigram, newSet);
 				}
 			}
 		}

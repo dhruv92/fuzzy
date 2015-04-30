@@ -1,9 +1,6 @@
 package edu.stanford.cs276;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.*;
 
 import edu.stanford.cs276.util.Pair;
@@ -12,7 +9,7 @@ public class CandidateGenerator implements Serializable {
 
 
 	private static CandidateGenerator cg_;
-	private static trigramDict;
+//	private static trigramDict;
 
 	// Don't use the constructor since this is a Singleton instance
 	private CandidateGenerator() {}
@@ -34,7 +31,7 @@ public class CandidateGenerator implements Serializable {
 	// Given a word, goes through every trigram in the word
 	// For each trigram, looks up the word set for that trigram dictionary
 	// Returns a set of all elements from each word set
-	private Set<String> trigramLists(String queryWord){
+	private Set<String> trigramLists(String queryWord, Map<String, Set<String>> trigramDict){
 		Set<String> candidateSet = new HashSet<String>();
 		if(queryWord.length() >= 3){
 			for(int i = 2; i < queryWord.length(); i++){
@@ -69,12 +66,12 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Generate all candidates for the target query
-	public Set<String> getCandidates(String query) throws Exception {
+	public Set<String> getCandidates(String query, Map<String, Set<String>> trigramDict) throws Exception {
 		StringTokenizer st = new StringTokenizer(query);
 		ArrayList<Set<String>> candidateSets = new ArrayList<Set<String>>();
 		while(st.hasMoreTokens()){
 			String queryWord = st.nextToken();
-			candidateSets.add(trigramLists(queryWord));
+			candidateSets.add(trigramLists(queryWord, trigramDict));
 		}
 
 		// Generate Cartesian product for candidate sets
