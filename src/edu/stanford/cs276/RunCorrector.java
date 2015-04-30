@@ -83,10 +83,11 @@ public class RunCorrector {
 			String correctedQuery = query;
 			CandidateGenerator cg = CandidateGenerator.get();
 			// Generate candidates
-			Set<String> candidates = cg.getCandidates(query, LanguageModel.trigramDict);
+			Set<String> candidates = cg.getCandidates(query, languageModel.getTrigramDict());
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
 			for (String candidate : candidates) {
+				System.out.println("Yeah!");
 				int distance = calculateEditDistance(query, candidate);
 				if (distance <= 2) {
 					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate, distance);
@@ -121,6 +122,8 @@ public class RunCorrector {
 			}
 			System.out.println(correctedQuery);
 		}
+		System.out.println(yourCorrectCount + " / " + totalCount);
+		
 		queriesFileReader.close();
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
