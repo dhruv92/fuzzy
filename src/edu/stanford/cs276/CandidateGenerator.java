@@ -36,9 +36,11 @@ public class CandidateGenerator implements Serializable {
 		if(queryWord.length() >= 3){
 			for(int i = 2; i < queryWord.length(); i++){
 				String trigram = "" + queryWord.charAt(i-2) + queryWord.charAt(i-1) + queryWord.charAt(i);
-				Set<String> trigramSet = trigramDict.get(trigram);
-				for(String candidateWord : trigramSet){
-					candidateSet.add(candidateWord);
+				if (trigramDict.containsKey(trigram)) {
+					Set<String> trigramSet = trigramDict.get(trigram);
+					for(String candidateWord : trigramSet){
+						candidateSet.add(candidateWord);
+					}
 				}
 			}
 		}

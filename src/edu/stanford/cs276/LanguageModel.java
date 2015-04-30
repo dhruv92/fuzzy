@@ -122,6 +122,7 @@ public class LanguageModel implements Serializable {
 	
 	// This helper method splits a words into its trigrams and adds them to the dictionary
 	private static void addToTrigramDict(String word) {
+		
 		if(word.length() >= 3) {
 			for(int i = 2; i < word.length(); i++) {
 				String trigram = "" + word.charAt(i-2) + word.charAt(i-1) + word.charAt(i);
@@ -136,6 +137,10 @@ public class LanguageModel implements Serializable {
 				}
 			}
 		}
+	}
+	
+	public Map<String, Set<String>> getTrigramDict() {
+		return trigramDict;
 	}
 	
 	// This helper method gets the count of a given bigram in the corpus
