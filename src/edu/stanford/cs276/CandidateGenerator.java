@@ -33,7 +33,7 @@ public class CandidateGenerator implements Serializable {
 	public Set<String> getCandidates(String query) throws Exception {
 		Set<String> candidates = new HashSet<String>();	
 		/*
-		 * Your code here
+		 * Your cod
 		 */
 		return candidates;
 	}
