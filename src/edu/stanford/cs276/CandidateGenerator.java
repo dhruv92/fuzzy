@@ -31,15 +31,22 @@ public class CandidateGenerator implements Serializable {
 	// Given a word, goes through every trigram in the word
 	// For each trigram, looks up the word set for that trigram dictionary
 	// Returns a set of all elements from each word set
-	private Set<String> trigramLists(String queryWord, Map<String, Set<String>> trigramDict){
+	private Set<String> trigramLists(String queryWord, 	Map<Integer, Set<Integer>> trigramDict,
+														Map<Integer, String> termLookup,
+														Map<String, Integer> trigramIdDict){
 		Set<String> candidateSet = new HashSet<String>();
 		if(queryWord.length() >= 3){
 			for(int i = 2; i < queryWord.length(); i++){
 				String trigram = "" + queryWord.charAt(i-2) + queryWord.charAt(i-1) + queryWord.charAt(i);
-				if (trigramDict.containsKey(trigram)) {
-					Set<String> trigramSet = trigramDict.get(trigram);
-					for(String candidateWord : trigramSet){
-						candidateSet.add(candidateWord);
+				if(trigramIdDict.containsKey(trigram)){
+					int trigramId = trigramIdDict.get(trigram);
+					if (trigramDict.containsKey(trigramId)) {
+						Set<Integer> termIdSet = trigramDict.get(trigramId);
+						for(int candidateId : termIdSet){
+							if(termLookup.containsKey(candidateId)){
+								candidateSet.add(termLookup.get(candidateId));
+							}
+						}
 					}
 				}
 			}
@@ -68,12 +75,14 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Generate all candidates for the target query
-	public Set<String> getCandidates(String query, Map<String, Set<String>> trigramDict) throws Exception {
+	public Set<String> getCandidates(String query, 	Map<Integer, Set<Integer>> trigramDict,
+													Map<Integer, String> termLookup,
+													Map<String, Integer> trigramIdDict) throws Exception {
 		StringTokenizer st = new StringTokenizer(query);
 		ArrayList<Set<String>> candidateSets = new ArrayList<Set<String>>();
 		while(st.hasMoreTokens()){
 			String queryWord = st.nextToken();
-			candidateSets.add(trigramLists(queryWord, trigramDict));
+			candidateSets.add(trigramLists(queryWord, trigramDict, termLookup, trigramIdDict));
 		}
 
 		// Generate Cartesian product for candidate sets

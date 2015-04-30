@@ -70,6 +70,11 @@ public class RunCorrector {
 		BufferedReader queriesFileReader = new BufferedReader(new FileReader(new File(queryFilePath)));
 		nsm.setProbabilityType(uniformOrEmpirical);
 		
+		System.out.println("Brigram Size: " + languageModel.bigramDict.size());
+		System.out.println("Trigram Size: " + languageModel.trigramDict.size());
+		
+		System.exit(0);
+		
 		int totalCount = 0;
 		int yourCorrectCount = 0;
 		String query = null;
@@ -83,7 +88,9 @@ public class RunCorrector {
 			String correctedQuery = query;
 			CandidateGenerator cg = CandidateGenerator.get();
 			// Generate candidates
-			Set<String> candidates = cg.getCandidates(query, languageModel.getTrigramDict());
+			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
+																languageModel.getTermLookup(),
+																languageModel.getTrigramIdDict());
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
 			for (String candidate : candidates) {
@@ -91,7 +98,7 @@ public class RunCorrector {
 				int distance = calculateEditDistance(query, candidate);
 				if (distance <= 2) {
 					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate, distance);
-					probability += LanguageModel.calculateQueryProbability(candidate);
+					probability += languageModel.calculateQueryProbability(candidate);
 					if (probability > maxProbability) {
 						maxProbability = probability;
 						correctedQuery = candidate;
