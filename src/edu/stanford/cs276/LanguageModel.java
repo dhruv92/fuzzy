@@ -32,7 +32,7 @@ public class LanguageModel implements Serializable {
 	
 	// Outputs the probability of this being a query from the training corpus
 	// language model
-	public static double calculateQueryProbability(String query) {
+	public double calculateQueryProbability(String query) {
 		if (query.isEmpty()) return 0; // handle empty strings not being in the corpus
 		
 		StringTokenizer queryTokenizer = new StringTokenizer(query);
@@ -58,7 +58,7 @@ public class LanguageModel implements Serializable {
 	
 	// Output the interpolated bigram probability of a pair of words
 	// Note this method converts to log space before outputting the probability
-	private static double bigramProb(String first, String second) {
+	private double bigramProb(String first, String second) {
 		double bigramProb = Math.log(countBigramDict(first, second)) - Math.log(unigram.count(first));
 		return INTERPOLATION_LAMDA * unigramProb(second) + (1 - INTERPOLATION_LAMDA) * (bigramProb);
 	}
@@ -66,12 +66,33 @@ public class LanguageModel implements Serializable {
 	static Dictionary unigram = new Dictionary();
 	
 	// Added a bigram dictionary to make bigram calculations easier
-	static Map<Pair<String, String>, Integer> bigramDict = new HashMap<Pair<String, String>, Integer>();
+	Map<Pair<String, String>, Integer> bigramDict = new HashMap<Pair<String, String>, Integer>();
 	
 	// Added a trigram (char, not word) dictionary to help with candidate generation
 	// Maps trigram to all words containing that trigram in document set
 	// e.g. "app" -> ["apple","apples","applicant","application",...]
-	static Map<String, Set<String>> trigramDict = new HashMap<String, Set<String>>();
+//	Map<String, Set<String>> trigramDict = new HashMap<String, Set<String>>();
+	
+	// trigram -> (set of words) is too expensive in space, will use
+	// trigramIds and termIds to convert strings to ints
+	// this must be written to disk
+	Map<Integer, Set<Integer>> trigramDict = new HashMap<Integer, Set<Integer>>();
+	
+	// trigram -> trigramId
+	// this must be written to disk
+	Map<String, Integer> trigramIdDict = new HashMap<String, Integer>();
+	
+	// word -> termId
+	// static so it is not written to disk
+	static Map<String, Integer> termIdDict = new HashMap<String, Integer>();
+	
+	// trigramId -> trigram
+	// static so it is not written to disk
+	static Map<Integer, String> trigramLookup = new HashMap<Integer, String>();
+	
+	// termId -> word
+	// this must be written to disk
+	Map<Integer, String> termLookup = new HashMap<Integer, String>();
 	
 	// Do not call constructor directly since this is a Singleton
 	private LanguageModel(String corpusFilePath) throws Exception {
@@ -111,7 +132,7 @@ public class LanguageModel implements Serializable {
 	}
 	
 	// This helper method adds a bigram to the dictionary 
-	private static void addToBigramDict(String last, String next) {
+	private void addToBigramDict(String last, String next) {
 		Pair<String, String> bigram = new Pair<String, String>(last, next);
 		if (bigramDict.containsKey(bigram)) {
 			bigramDict.put(bigram, bigramDict.get(bigram) + 1);
@@ -121,30 +142,62 @@ public class LanguageModel implements Serializable {
 	}
 	
 	// This helper method splits a words into its trigrams and adds them to the dictionary
-	private static void addToTrigramDict(String word) {
-		
+	private void addToTrigramDict(String word) {
+		// Assume word is new to termIdDict,
+		int termId = termIdDict.keySet().size();
+		// If word is not new, assign actual termId
+		if(termIdDict.containsKey(word)) {
+			termId = termIdDict.get(word);
+		} else {
+			termIdDict.put(word, termId);
+			termLookup.put(termId, word);
+		}
 		if(word.length() >= 3) {
-			for(int i = 2; i < word.length(); i++) {
+			for (int i = 2; i < word.length(); i++) {
 				String trigram = "" + word.charAt(i-2) + word.charAt(i-1) + word.charAt(i);
-				if(trigramDict.containsKey(trigram)) {
-					if(!trigramDict.get(trigram).contains(word)) {
-						trigramDict.get(trigram).add(word);
+				int trigramId = trigramIdDict.keySet().size();
+				if(trigramIdDict.containsKey(trigram)) {
+					trigramId = trigramIdDict.get(trigram);
+				} else {
+					trigramIdDict.put(trigram, trigramId);
+					trigramLookup.put(trigramId, trigram);
+				}
+				if (trigramDict.containsKey(trigramId)) {
+					if(!trigramDict.get(trigramId).contains(termId)) {
+						trigramDict.get(trigramId).add(termId);
 					}
 				} else {
-					Set<String> newSet = new HashSet<String>();
-					newSet.add(word);
-					trigramDict.put(trigram, newSet);
+					Set<Integer> newSet = new HashSet<Integer>();
+					newSet.add(termId);
+					trigramDict.put(trigramId, newSet);
 				}
 			}
 		}
 	}
 	
-	public Map<String, Set<String>> getTrigramDict() {
+	public Map<Integer, Set<Integer>> getTrigramDict() {
 		return trigramDict;
 	}
 	
+	public Map<Integer, String> getTermLookup() {
+		return termLookup;
+	}
+	
+	public Map<String, Integer> getTermIdDict() {
+		return termIdDict;
+	}
+	
+	public Map<Integer, String> getTrigramLookup() {
+		return trigramLookup;
+	}
+	
+	public Map<String, Integer> getTrigramIdDict() {
+		return trigramIdDict;
+	}
+
+	
 	// This helper method gets the count of a given bigram in the corpus
-	private static double countBigramDict(String first, String second) {
+	private double countBigramDict(String first, String second) {
 		Pair<String, String> bigram = new Pair<String, String>(first, second);
 		if (bigramDict.containsKey(bigram)) {
 			return bigramDict.get(bigram);
