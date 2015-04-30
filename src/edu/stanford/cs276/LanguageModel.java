@@ -8,9 +8,12 @@ import java.io.FileReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
 import edu.stanford.cs276.util.Dictionary;
 import edu.stanford.cs276.util.Pair;
 
@@ -27,7 +30,7 @@ public class LanguageModel implements Serializable {
 	
 	// Outputs the probability of this being a query from the training corpus
 	// language model
-	private static double calculateQueryProbability(String query) {
+	public static double calculateQueryProbability(String query) {
 		if (query.isEmpty()) return 0; // handle empty strings not being in the corpus
 		
 		StringTokenizer queryTokenizer = new StringTokenizer(query);
@@ -63,6 +66,11 @@ public class LanguageModel implements Serializable {
 	// Added a bigram dictionary to make bigram calculations easier
 	static Map<Pair<String, String>, Integer> bigramDict = new HashMap<Pair<String, String>, Integer>();
 	
+	// Added a trigram (char, not word) dictionary to help with candidate generation
+	// Maps trigram to all words containing that trigram in document set
+	// e.g. "app" -> ["apple","apples","applicant","application",...]
+	static Map<String, List<String>> trigramDict = new HashMap<String, List<String>>();
+	
 	// Do not call constructor directly since this is a Singleton
 	private LanguageModel(String corpusFilePath) throws Exception {
 		constructDictionaries(corpusFilePath);
@@ -82,13 +90,15 @@ public class LanguageModel implements Serializable {
 			BufferedReader input = new BufferedReader(new FileReader(file));
 			String line = null;
 			while ((line = input.readLine()) != null) {
-				/* This section of the code parses the line into bigram + unigram dictionaries */
+				/* This section of the code parses the line into trigram, bigram, and unigram dictionaries */
 				StringTokenizer tokenizer = new StringTokenizer(line);
 				String lastWord = tokenizer.nextToken();
 				unigram.add(lastWord);
+				addToTrigramDict(lastWord);
 				while (tokenizer.hasMoreTokens()) {
 					String nextWord = tokenizer.nextToken();
 					unigram.add(nextWord);
+					addToTrigramDict(nextWord);
 					addToBigramDict(lastWord, nextWord);
 					lastWord = nextWord;
 				}
@@ -105,6 +115,24 @@ public class LanguageModel implements Serializable {
 			bigramDict.put(bigram, bigramDict.get(bigram) + 1);
 		} else {
 			bigramDict.put(bigram, 1);
+		}
+	}
+	
+	// This helper method splits a words into its trigrams and adds them to the dictionary
+	private static void addToTrigramDict(String word) {
+		if(word.length() >= 3) {
+			for(int i = 2; i < word.length(); i++) {
+				String trigram = "" + word.charAt(i-2) + word.charAt(i-1) + word.charAt(i);
+				if(trigramDict.containsKey(trigram)) {
+					if(!trigramDict.get(trigram).contains(word)) {
+						trigramDict.get(trigram).add(word);
+					}
+				} else {
+					ArrayList<String> newList = new ArrayList<String>();
+					newList.add(word);
+					trigramDict.put(trigram, newList);
+				}
+			}
 		}
 	}
 	
