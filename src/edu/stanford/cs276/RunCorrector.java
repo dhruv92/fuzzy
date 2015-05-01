@@ -96,7 +96,7 @@ public class RunCorrector {
 			Set<Candidate> candidateSet = cg.getCandidates(query, languageModel.unigram);
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
-<<<<<<< HEAD
+
 			System.out.println("Query: " + query);
 			for(Candidate candidate : candidateSet) {
 				System.out.println("     Candidate: " + candidate.getCandidate());
@@ -107,18 +107,6 @@ public class RunCorrector {
 					if (probability > maxProbability) {
 						maxProbability = probability;
 						correctedQuery = candidate.getCandidate();
-=======
-			for (ArrayList<Candidate> candidateList : candidateLists) {
-				for(Candidate candidate : candidateList) {
-					int distance = candidate.getDistance();
-					if (distance <= 2) {
-						double probability = NoisyChannelModel.calculateCandidateProbability(candidate, query);
-						probability += languageModel.calculateQueryProbability(candidate.getCandidate());
-						if (probability > maxProbability) {
-							maxProbability = probability;
-							correctedQuery = candidate.getCandidate();
-						}
->>>>>>> origin/master
 					}
 				}
 
