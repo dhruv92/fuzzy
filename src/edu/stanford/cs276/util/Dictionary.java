@@ -20,6 +20,10 @@ public class Dictionary implements Serializable {
 	public int getTermCount() {
 		return termCount;
 	}
+	
+	public int getUniqueKeyCount() {
+		return map.keySet().size();
+	}
 
 	public void add(String term) {
 

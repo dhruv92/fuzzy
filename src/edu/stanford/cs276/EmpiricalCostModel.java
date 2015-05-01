@@ -3,10 +3,14 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import edu.stanford.cs276.util.Candidate;
 import edu.stanford.cs276.util.Dictionary;
+import edu.stanford.cs276.util.Edit;
+import edu.stanford.cs276.util.Edit.EditType;
 import edu.stanford.cs276.util.Pair;
 
 public class EmpiricalCostModel implements EditCostModel{
@@ -132,10 +136,43 @@ public class EmpiricalCostModel implements EditCostModel{
 	// This method takes into account the edits, calculates the probabilities, does LaPlace smoothing
 	// and then out puts them as a log probability
 	@Override
-	public double editProbability(String original, String R, int distance) {
-		return 0.5;
-		/*
-		 * Your code here
-		 */
+	public double editProbability(Candidate candidate, String R) {
+		if (candidate.getCandidate().equals(R)) return Math.log(EQUAL_PROBABILITY);
+		
+		ArrayList<Edit> edits = candidate.getEdits();
+		double probability = 0.0;
+		for (Edit edit : edits) {
+			EditType et = edit.getEditType();
+			Pair<String, String> change = edit.getChange();
+			switch (et) {
+				case INSERTION:
+					int insCount = (insertionMatrix.containsKey(change)) ? insertionMatrix.get(change) : 1; //1 for smoothing
+					int beforeCount = charCounts.count(change.getFirst()) + charCounts.getUniqueKeyCount(); // smoothing, add alphabet
+					probability += Math.log(insCount / beforeCount);
+					break;
+				case DELETION:
+					int delCount = (deletionMatrix.containsKey(change)) ? deletionMatrix.get(change) : 1;
+					String bigram = change.getFirst() + change.getSecond();
+					int seqCount = bigramCounts.count(bigram) + bigramCounts.getUniqueKeyCount();
+					probability += Math.log(delCount / seqCount);
+					break;
+				case TRANSPOSITION:
+					int traCount = (transpositionMatrix.containsKey(change)) ? transpositionMatrix.get(change) : 1;
+					String big = change.getFirst() + change.getSecond();
+					int seqC = bigramCounts.count(big) + bigramCounts.getUniqueKeyCount();
+					probability += Math.log(traCount / seqC);
+					break;
+				case SUBSTITUTION:
+					int subCount = (substitutionMatrix.containsKey(change)) ? substitutionMatrix.get(change) : 1;
+					int replaceCount = charCounts.count(change.getSecond()) + charCounts.getUniqueKeyCount();
+					probability += Math.log(subCount / replaceCount);
+					break;
+				default:
+					break;
+			}
+		}
+		return probability;
 	}
+	
+	private static final double EQUAL_PROBABILITY = 0.95;
 }
