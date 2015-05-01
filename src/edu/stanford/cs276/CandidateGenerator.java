@@ -63,57 +63,57 @@ public class CandidateGenerator implements Serializable {
 
 
 	private ArrayList<ArrayList<Candidate>> cartesianProduct(ArrayList<ArrayList<Candidate>> sets) {
-	    if (sets.size() < 2)
-	        throw new IllegalArgumentException(
-	                "Can't have a product of fewer than two sets (got " +
-	                sets.size() + ")");
+		if (sets.size() < 2)
+			throw new IllegalArgumentException(
+					"Can't have a product of fewer than two sets (got " +
+							sets.size() + ")");
 
-	    return _cartesianProduct(0, sets);
+		return _cartesianProduct(0, sets);
 	}
 
 	private static ArrayList<ArrayList<Candidate>> _cartesianProduct(int index, ArrayList<ArrayList<Candidate>> sets) {
 		ArrayList<ArrayList<Candidate>> ret = new ArrayList<ArrayList<Candidate>>();
-	    if (index == sets.size()) {
-	        ret.add(new ArrayList<Candidate>());
-	    } else {
-	        for (Candidate obj : sets.get(index)) {
-	            for (ArrayList<Candidate> set : _cartesianProduct(index+1, sets)) {
-	                set.add(obj);
-	                ret.add(set);
-	            }
-	        }
-	    }
-	    return ret;
+		if (index == sets.size()) {
+			ret.add(new ArrayList<Candidate>());
+		} else {
+			for (Candidate obj : sets.get(index)) {
+				for (ArrayList<Candidate> set : _cartesianProduct(index+1, sets)) {
+					set.add(obj);
+					ret.add(set);
+				}
+			}
+		}
+		return ret;
 	}
-	
+
 	// Recursively generates the cartesian product for all sets
-//	private Set<Set<Candidate>> cartesianProduct(ArrayList<Set<Candidate>> remainder){
-//		Set<Candidate> result = new HashSet<Candidate>();
-//		if(remainder.size() == 1) return remainder.get(0);
-//		Set<Candidate> current = remainder.get(0);
-//		ArrayList<Set<Candidate>> remainder_cpy = new ArrayList<Set<Candidate>>();
-//		for(Set<Candidate> set : remainder){
-//			remainder_cpy.add(set);
-//		}
-//		remainder_cpy.remove(0);
-//		for(Candidate candidate_word : current){
-//			for(Candidate candidate_str : cartesianProduct(remainder_cpy)){
-//				String str = candidate_word.getCandidate() + " " + candidate_str.getCandidate();
-//				int distance = candidate_word.getDistance() + candidate_str.getDistance();
-//				ArrayList<Character> edits = new ArrayList<Character>();
-//				for(char edit : candidate_word.getEdits()) {
-//					edits.add(edit);
-//				}
-//				for(char edit : candidate_str.getEdits()) {
-//					edits.add(edit);
-//				}
-//				if(distance <= 2) {
-//					result.add(new Candidate(str, distance, edits));
-//				}
-//			}
-//		}
-//		return result;
-//	}
+	//	private Set<Set<Candidate>> cartesianProduct(ArrayList<Set<Candidate>> remainder){
+	//		Set<Candidate> result = new HashSet<Candidate>();
+	//		if(remainder.size() == 1) return remainder.get(0);
+	//		Set<Candidate> current = remainder.get(0);
+	//		ArrayList<Set<Candidate>> remainder_cpy = new ArrayList<Set<Candidate>>();
+	//		for(Set<Candidate> set : remainder){
+	//			remainder_cpy.add(set);
+	//		}
+	//		remainder_cpy.remove(0);
+	//		for(Candidate candidate_word : current){
+	//			for(Candidate candidate_str : cartesianProduct(remainder_cpy)){
+	//				String str = candidate_word.getCandidate() + " " + candidate_str.getCandidate();
+	//				int distance = candidate_word.getDistance() + candidate_str.getDistance();
+	//				ArrayList<Character> edits = new ArrayList<Character>();
+	//				for(char edit : candidate_word.getEdits()) {
+	//					edits.add(edit);
+	//				}
+	//				for(char edit : candidate_str.getEdits()) {
+	//					edits.add(edit);
+	//				}
+	//				if(distance <= 2) {
+	//					result.add(new Candidate(str, distance, edits));
+	//				}
+	//			}
+	//		}
+	//		return result;
+	//	}
 
 	// Generate all candidates for the target query TRIGRAMS
 	//	public Set<String> getCandidates(String query, 	Map<Integer, Set<Integer>> trigramDict,
@@ -129,7 +129,7 @@ public class CandidateGenerator implements Serializable {
 	//		// Generate Cartesian product for candidate sets
 	//		return cartesianProduct(candidateSets);
 	//	}
-	
+
 	private boolean allValidWords(String query, Dictionary words) {
 		StringTokenizer st = new StringTokenizer(query);
 		while(st.hasMoreTokens()) {
@@ -161,13 +161,15 @@ public class CandidateGenerator implements Serializable {
 		for(char ch : alphabet) {
 			char[] c = query.toCharArray();
 			char original = c[pos];
-			c[pos] = ch;
-			String candidateString = new String(c);
-			if(allValidWords(candidateString, words)) {
-				ArrayList<Edit> edits = new ArrayList<Edit>();
-				// Original char is char at pos, replacement char is alphabet letter
-				edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch));
-				subs.add(new Candidate(candidateString, 2, edits));
+			if(ch != original){
+				c[pos] = ch;
+				String candidateString = new String(c);
+				if(allValidWords(candidateString, words)) {
+					ArrayList<Edit> edits = new ArrayList<Edit>();
+					// Original char is char at pos, replacement char is alphabet letter
+					edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch));
+					subs.add(new Candidate(candidateString, 2, edits));
+				}
 			}
 		}
 		return subs;
@@ -197,15 +199,17 @@ public class CandidateGenerator implements Serializable {
 
 		// Char Array idea from Stack Overflow
 		char[] c = query.toCharArray();
-		char temp = c[curr];
-		c[curr] = c[next];
-		c[curr] = temp;
-		String candidateString = new String(c);
-		if(allValidWords(candidateString, words)) {
-			ArrayList<Edit> edits = new ArrayList<Edit>();
-			// Original char is char at curr, replacement char is char at next
-			edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+query.charAt(curr), ""+query.charAt(next)));
-			trans.add(new Candidate(candidateString, 1, edits));
+		if(c[curr] != c[next]) {
+			char temp = c[curr];
+			c[curr] = c[next];
+			c[next] = temp;
+			String candidateString = new String(c);
+			if(allValidWords(candidateString, words)) {
+				ArrayList<Edit> edits = new ArrayList<Edit>();
+				// Original char is char at curr, replacement char is char at next
+				edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+query.charAt(curr), ""+query.charAt(next)));
+				trans.add(new Candidate(candidateString, 1, edits));
+			}
 		}
 		return trans;
 	}
@@ -243,21 +247,27 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	public Set<Candidate> getCandidates(String query, Dictionary unigram) {
-//		StringTokenizer st = new StringTokenizer(query);
-//		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
-		return editOneCandidates(query, unigram);
-		
-//		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
-//		for(Set<Candidate> set : candidateSets) {
-//			ArrayList<Candidate> list = new ArrayList<Candidate>();
-//			for(Candidate candidate : set) {
-//				list.add(candidate);
-//			}
-//			candidateLists.add(list);
-//		}
+		Set<Candidate> candidates = new HashSet<Candidate>();
+		//		StringTokenizer st = new StringTokenizer(query);
+		//		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
+		candidates.add(new Candidate(query, 0, new ArrayList<Edit>()));
+		Set<Candidate> editCandidates = editOneCandidates(query, unigram);
+		for(Candidate candidate : editCandidates) {
+			candidates.add(candidate);
+		}
+		return candidates;
+
+		//		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
+		//		for(Set<Candidate> set : candidateSets) {
+		//			ArrayList<Candidate> list = new ArrayList<Candidate>();
+		//			for(Candidate candidate : set) {
+		//				list.add(candidate);
+		//			}
+		//			candidateLists.add(list);
+		//		}
 
 		// Generate Cartesian product for candidate sets
-//		return cartesianProduct(candidateLists);
+		//		return cartesianProduct(candidateLists);
 	}
 
 }
