@@ -3,6 +3,7 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,17 +93,19 @@ public class RunCorrector {
 //																languageModel.getTermLookup(),
 //																languageModel.getTrigramIdDict());
 			
-			Set<Candidate> candidates = cg.getCandidates(query, languageModel.unigram);
+			ArrayList<ArrayList<Candidate>> candidateLists = cg.getCandidates(query, languageModel.unigram);
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
-			for (Candidate candidate : candidates) {
-				int distance = candidate.getDistance();
-				if (distance <= 2) {
-					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate.getCandidate(), distance);
-					probability += languageModel.calculateQueryProbability(candidate.getCandidate());
-					if (probability > maxProbability) {
-						maxProbability = probability;
-						correctedQuery = candidate.getCandidate();
+			for (ArrayList<Candidate> candidateList : candidateLists) {
+				for(Candidate candidate : candidateList) {
+					int distance = candidate.getDistance();
+					if (distance <= 2) {
+						double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate.getCandidate(), distance);
+						probability += languageModel.calculateQueryProbability(candidate.getCandidate());
+						if (probability > maxProbability) {
+							maxProbability = probability;
+							correctedQuery = candidate.getCandidate();
+						}
 					}
 				}
 			}
