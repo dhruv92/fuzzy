@@ -16,12 +16,12 @@ public class RunCorrector {
 
 	public static LanguageModel languageModel;
 	public static NoisyChannelModel nsm;
-	
+
 
 	public static void main(String[] args) throws Exception {
-		
+
 		long startTime = System.currentTimeMillis();
-		
+
 		// Parse input arguments
 		String uniformOrEmpirical = null;
 		String queryFilePath = null;
@@ -51,51 +51,63 @@ public class RunCorrector {
 		else {
 			System.err.println(
 					"Invalid arguments.  Argument count must be 2, 3 or 4" +
-					"./runcorrector <uniform | empirical> <query file> \n" + 
-					"./runcorrector <uniform | empirical> <query file> <gold file> \n" +
-					"./runcorrector <uniform | empirical> <query file> <extra> \n" +
-					"./runcorrector <uniform | empirical> <query file> <extra> <gold file> \n" +
-					"SAMPLE: ./runcorrector empirical data/queries.txt \n" +
-					"SAMPLE: ./runcorrector empirical data/queries.txt data/gold.txt \n" +
-					"SAMPLE: ./runcorrector empirical data/queries.txt extra \n" +
+							"./runcorrector <uniform | empirical> <query file> \n" + 
+							"./runcorrector <uniform | empirical> <query file> <gold file> \n" +
+							"./runcorrector <uniform | empirical> <query file> <extra> \n" +
+							"./runcorrector <uniform | empirical> <query file> <extra> <gold file> \n" +
+							"SAMPLE: ./runcorrector empirical data/queries.txt \n" +
+							"SAMPLE: ./runcorrector empirical data/queries.txt data/gold.txt \n" +
+							"SAMPLE: ./runcorrector empirical data/queries.txt extra \n" +
 					"SAMPLE: ./runcorrector empirical data/queries.txt extra data/gold.txt \n");
 			return;
 		}
-		
+
 		if (goldFilePath != null ){
 			goldFileReader = new BufferedReader(new FileReader(new File(goldFilePath)));
 		}
-		
+
 		// Load models from disk
 		languageModel = LanguageModel.load(); 
 		nsm = NoisyChannelModel.load();
 		BufferedReader queriesFileReader = new BufferedReader(new FileReader(new File(queryFilePath)));
 		nsm.setProbabilityType(uniformOrEmpirical);
-		
+
 		System.out.println("Unigram Size: " + languageModel.unigram.getTermCount());
 		System.out.println("Brigram Size: " + languageModel.bigramDict.size());
-//		System.out.println("Trigram Size: " + languageModel.trigramDict.size());
-		
+		//		System.out.println("Trigram Size: " + languageModel.trigramDict.size());
+
 		int totalCount = 0;
 		int yourCorrectCount = 0;
 		String query = null;
-		
+
 		/*
 		 * Each line in the file represents one query.  We loop over each query and find
 		 * the most likely correction
 		 */
 		while ((query = queriesFileReader.readLine()) != null) {
-			
+
 			String correctedQuery = query;
 			CandidateGenerator cg = CandidateGenerator.get();
 			// Generate candidates
-//			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
-//																languageModel.getTermLookup(),
-//																languageModel.getTrigramIdDict());
-			
-			ArrayList<ArrayList<Candidate>> candidateLists = cg.getCandidates(query, languageModel.unigram);
+			//			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
+			//																languageModel.getTermLookup(),
+			//																languageModel.getTrigramIdDict());
+
+			Set<Candidate> candidateSet = cg.getCandidates(query, languageModel.unigram);
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
+<<<<<<< HEAD
+			System.out.println("Query: " + query);
+			for(Candidate candidate : candidateSet) {
+				System.out.println("     Candidate: " + candidate.getCandidate());
+				int distance = candidate.getDistance();
+				if (distance <= 2) {
+					double probability = NoisyChannelModel.calculateCandidateProbability(candidate, query);
+					probability += languageModel.calculateQueryProbability(candidate.getCandidate());
+					if (probability > maxProbability) {
+						maxProbability = probability;
+						correctedQuery = candidate.getCandidate();
+=======
 			for (ArrayList<Candidate> candidateList : candidateLists) {
 				for(Candidate candidate : candidateList) {
 					int distance = candidate.getDistance();
@@ -106,11 +118,13 @@ public class RunCorrector {
 							maxProbability = probability;
 							correctedQuery = candidate.getCandidate();
 						}
+>>>>>>> origin/master
 					}
 				}
+
 			}
-			
-			
+
+
 			if ("extra".equals(extra)) {
 				/*
 				 * If you are going to implement something regarding to running the corrector, 
@@ -120,7 +134,7 @@ public class RunCorrector {
 				 * implementations without the "extra" parameter.
 				 */	
 			}
-			
+
 
 			// If a gold file was provided, compare our correction to the gold correction
 			// and output the running accuracy
@@ -134,39 +148,39 @@ public class RunCorrector {
 			System.out.println(correctedQuery);
 		}
 		System.out.println(yourCorrectCount + " / " + totalCount);
-		
+
 		queriesFileReader.close();
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		// System.out.println("RUNNING TIME: "+totalTime/1000+" seconds ");
 	}
-	
+
 	// Calculate Levenshtein Distance between two strings
 	private static int calculateEditDistance(String start, String end) {
 		return editDistanceDynamic(start, start.length(), end, end.length(), new HashMap<Pair<String, String>, Integer>());
-		
+
 	}
-	
+
 	// Derived from pseudo-code from lecture and Wikipedia
 	private static int editDistanceDynamic(String start, int sLength, String end, int eLength, Map<Pair<String, String>, Integer> savedDistances) {
 		if (sLength == 0) return eLength;
 		if (eLength == 0) return sLength;
-		
+
 		Pair<String, String> s_e = new Pair<String, String>(start, end);
 		Pair<String, String> e_s = new Pair<String, String>(end, start);
 		if (savedDistances.containsKey(s_e)) return savedDistances.get(s_e);
 		if (savedDistances.containsKey(e_s)) return savedDistances.get(e_s);
-		
+
 		int cost = 1;
 		if (start.charAt(sLength - 1) == end.charAt(eLength - 1)) cost = 0;
-		
+
 		int editDistance =  Math.min(Math.min(editDistanceDynamic(start, sLength-1, end, eLength, savedDistances) + 1, 
-												editDistanceDynamic(start, sLength, end, eLength-1, savedDistances) + 1),
-												editDistanceDynamic(start, sLength-1, end, eLength-1, savedDistances) + cost);
+				editDistanceDynamic(start, sLength, end, eLength-1, savedDistances) + 1),
+				editDistanceDynamic(start, sLength-1, end, eLength-1, savedDistances) + cost);
 		savedDistances.put(s_e, editDistance);
 		savedDistances.put(e_s, editDistance);
-		
+
 		return editDistance;
-		
+
 	}
 }
