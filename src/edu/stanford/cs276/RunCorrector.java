@@ -100,7 +100,7 @@ public class RunCorrector {
 				for(Candidate candidate : candidateList) {
 					int distance = candidate.getDistance();
 					if (distance <= 2) {
-						double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate.getCandidate(), distance);
+						double probability = NoisyChannelModel.calculateCandidateProbability(candidate, query);
 						probability += languageModel.calculateQueryProbability(candidate.getCandidate());
 						if (probability > maxProbability) {
 							maxProbability = probability;
