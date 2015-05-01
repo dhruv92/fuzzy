@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.cs276.util.Candidate;
 import edu.stanford.cs276.util.Pair;
 
 public class RunCorrector {
@@ -70,10 +71,9 @@ public class RunCorrector {
 		BufferedReader queriesFileReader = new BufferedReader(new FileReader(new File(queryFilePath)));
 		nsm.setProbabilityType(uniformOrEmpirical);
 		
+		System.out.println("Unigram Size: " + languageModel.unigram.getTermCount());
 		System.out.println("Brigram Size: " + languageModel.bigramDict.size());
-		System.out.println("Trigram Size: " + languageModel.trigramDict.size());
-		
-		System.exit(0);
+//		System.out.println("Trigram Size: " + languageModel.trigramDict.size());
 		
 		int totalCount = 0;
 		int yourCorrectCount = 0;
@@ -88,20 +88,21 @@ public class RunCorrector {
 			String correctedQuery = query;
 			CandidateGenerator cg = CandidateGenerator.get();
 			// Generate candidates
-			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
-																languageModel.getTermLookup(),
-																languageModel.getTrigramIdDict());
+//			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
+//																languageModel.getTermLookup(),
+//																languageModel.getTrigramIdDict());
+			
+			Set<Candidate> candidates = cg.getCandidates(query, languageModel.unigram);
 			double maxProbability = 0;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
-			for (String candidate : candidates) {
-				System.out.println("Yeah!");
-				int distance = calculateEditDistance(query, candidate);
+			for (Candidate candidate : candidates) {
+				int distance = candidate.getDistance();
 				if (distance <= 2) {
-					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate, distance);
-					probability += languageModel.calculateQueryProbability(candidate);
+					double probability = NoisyChannelModel.calculateCandidateProbability(query, candidate.getCandidate(), distance);
+					probability += languageModel.calculateQueryProbability(candidate.getCandidate());
 					if (probability > maxProbability) {
 						maxProbability = probability;
-						correctedQuery = candidate;
+						correctedQuery = candidate.getCandidate();
 					}
 				}
 			}
