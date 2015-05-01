@@ -16,6 +16,10 @@ public class Dictionary implements Serializable {
 		termCount = 0;
 		map = new HashMap<String, Integer>();
 	}
+	
+	public int getTermCount() {
+		return termCount;
+	}
 
 	public void add(String term) {
 
