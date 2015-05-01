@@ -28,5 +28,4 @@ public class Candidate implements Serializable {
 		return edits;
 	}
 	
-	// public toString
 }
