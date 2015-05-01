@@ -7,9 +7,9 @@ public class UniformCostModel implements EditCostModel {
 		/*
 		 * Your code here - NOTE FROM DHRUV, added code
 		 */
-		if (original.equals(R)) return EQUAL_PROBABILITY;
+		if (original.equals(R)) return Math.log(EQUAL_PROBABILITY);
 		
-		return Math.pow(EDIT_PROBABILITY, distance);
+		return Math.log(Math.pow(EDIT_PROBABILITY, distance));
 	}
 	
 	//we should play with these numbers
