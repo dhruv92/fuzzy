@@ -136,11 +136,12 @@ public class CandidateGenerator implements Serializable {
 		for(char ch : alphabet) {
 			String candidateString = word.substring(0, pos) + ch + word.substring(pos);
 			if(words.count(candidateString) != 0) {
+				ArrayList<Edit> edits = new ArrayList<Edit>();
 				// Original char is char before insertion, replacement char is alphabet letter
 				String original = "";
 				if(pos > 0) original += word.charAt(pos-1);
-				Edit edit = new Edit(Edit.EditType.INSERTION, "" + word.charAt(pos), "" + ch);
-				inserts.add(new Candidate(candidateString, 1, edit));
+				edits.add(new Edit(Edit.EditType.INSERTION, "" + word.charAt(pos), "" + ch));
+				inserts.add(new Candidate(candidateString, 1, edits));
 			}
 		}
 		return inserts;
@@ -155,9 +156,10 @@ public class CandidateGenerator implements Serializable {
 			c[pos] = ch;
 			String candidateString = new String(c);
 			if(words.count(candidateString) != 0) {
+				ArrayList<Edit> edits = new ArrayList<Edit>();
 				// Original char is char at pos, replacement char is alphabet letter
-				Edit edit = new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch);
-				subs.add(new Candidate(candidateString, 2, edit));
+				edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch));
+				subs.add(new Candidate(candidateString, 2, edits));
 			}
 		}
 		return subs;
@@ -172,8 +174,9 @@ public class CandidateGenerator implements Serializable {
 			// Original char is char at pos, replacement char is no_char
 			String original = "";
 			if(pos > 0) original += word.charAt(pos-1);
-			Edit edit = new Edit(Edit.EditType.DELETION, original, "" + word.charAt(pos));
-			deletes.add(new Candidate(candidateString, 1, edit));
+			ArrayList<Edit> edits = new ArrayList<Edit>();
+			edits.add(new Edit(Edit.EditType.DELETION, original, "" + word.charAt(pos)));
+			deletes.add(new Candidate(candidateString, 1, edits));
 		}
 		return deletes;
 	}
@@ -191,9 +194,10 @@ public class CandidateGenerator implements Serializable {
 		c[curr] = temp;
 		String candidateString = new String(c);
 		if(words.count(candidateString) != 0) {
+			ArrayList<Edit> edits = new ArrayList<Edit>();
 			// Original char is char at curr, replacement char is char at next
-			Edit edit = new Edit(Edit.EditType.TRANSPOSITION, ""+word.charAt(curr), ""+word.charAt(next));
-			trans.add(new Candidate(candidateString, 1, edit));
+			edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+word.charAt(curr), ""+word.charAt(next)));
+			trans.add(new Candidate(candidateString, 1, edits));
 		}
 		return trans;
 	}
