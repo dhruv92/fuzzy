@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import edu.stanford.cs276.util.Candidate;
 
 public class NoisyChannelModel implements Serializable {
 	
@@ -21,9 +22,9 @@ public class NoisyChannelModel implements Serializable {
 	 */
 	
 	// Wrapper for EditCostModel editProbability calculation
-	public static double calculateCandidateProbability(String original, String R, int distance) throws Exception {
+	public static double calculateCandidateProbability(Candidate candidate, String R) throws Exception {
 		if (ecm_ != null) {
-			return ecm_.editProbability(original, R, distance);
+			return ecm_.editProbability(candidate, R);
 		} else {
 			throw new Exception("Probability type has not been set!");
 		}

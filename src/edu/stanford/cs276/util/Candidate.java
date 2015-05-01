@@ -6,26 +6,26 @@ import java.util.HashMap;
 
 public class Candidate implements Serializable {
 
-	private String candidateWord;
+	private String candidateQuery;
 	private int editDistance;
-	private Edit edit;
+	private ArrayList<Edit> edits;
 
-	public Candidate(String candidateWord, int editDistance, Edit edit) {
-		this.candidateWord = candidateWord;
+	public Candidate(String candidateQuery, int editDistance, ArrayList<Edit> edits) {
+		this.candidateQuery = candidateQuery;
 		this.editDistance = editDistance;
-		this.edit = edit;
+		this.edits = edits;
 	}
 	
 	public String getCandidate() {
-		return candidateWord;
+		return candidateQuery;
 	}
 	
 	public int getDistance() {
 		return editDistance;
 	}
 	
-	public Edit getEdit() {
-		return edit;
+	public ArrayList<Edit> getEdits() {
+		return edits;
 	}
 	
 	// public toString

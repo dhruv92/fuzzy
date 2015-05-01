@@ -1,15 +1,17 @@
 package edu.stanford.cs276;
 
+import edu.stanford.cs276.util.Candidate;
+
 public class UniformCostModel implements EditCostModel {
 	
 	@Override
-	public double editProbability(String original, String R, int distance) {
+	public double editProbability(Candidate candidate, String R) {
 		/*
 		 * Your code here - NOTE FROM DHRUV, added code
 		 */
-		if (original.equals(R)) return Math.log(EQUAL_PROBABILITY);
+		if (candidate.getCandidate().equals(R)) return Math.log(EQUAL_PROBABILITY);
 		
-		return Math.log(Math.pow(EDIT_PROBABILITY, distance));
+		return Math.log(Math.pow(EDIT_PROBABILITY, candidate.getDistance()));
 	}
 	
 	//we should play with these numbers
