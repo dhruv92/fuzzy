@@ -28,4 +28,11 @@ public class Candidate implements Serializable {
 		return edits;
 	}
 	
+	public String toString() {
+		String ret = "STRING: " + candidateQuery + " DISTANCE: " + editDistance + " EDITS: ";
+		for(Edit edit : edits){
+			ret += edit.toString() + ", ";
+		}
+		return ret;
+	}
 }
