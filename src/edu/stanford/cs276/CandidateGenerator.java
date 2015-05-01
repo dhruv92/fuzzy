@@ -129,18 +129,26 @@ public class CandidateGenerator implements Serializable {
 	//		// Generate Cartesian product for candidate sets
 	//		return cartesianProduct(candidateSets);
 	//	}
+	
+	private boolean allValidWords(String query, Dictionary words) {
+		StringTokenizer st = new StringTokenizer(query);
+		while(st.hasMoreTokens()) {
+			if(words.count(st.nextToken()) == 0) return false;
+		}
+		return true;
+	}
 
 	// Given a word and pos, insert every letter in the alphabet at that position
-	private Set<Candidate> generateInsertions(String word, int pos, Dictionary words) {
+	private Set<Candidate> generateInsertions(String query, int pos, Dictionary words) {
 		Set<Candidate> inserts = new HashSet<Candidate>();
 		for(char ch : alphabet) {
-			String candidateString = word.substring(0, pos) + ch + word.substring(pos);
-			if(words.count(candidateString) != 0) {
+			String candidateString = query.substring(0, pos) + ch + query.substring(pos);
+			if(allValidWords(candidateString, words)) {
 				ArrayList<Edit> edits = new ArrayList<Edit>();
 				// Original char is char before insertion, replacement char is alphabet letter
 				String original = "";
-				if(pos > 0) original += word.charAt(pos-1);
-				edits.add(new Edit(Edit.EditType.INSERTION, "" + word.charAt(pos), "" + ch));
+				if(pos > 0) original += query.charAt(pos-1);
+				edits.add(new Edit(Edit.EditType.INSERTION, "" + query.charAt(pos), "" + ch));
 				inserts.add(new Candidate(candidateString, 1, edits));
 			}
 		}
@@ -148,14 +156,14 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Given a start word and position, swap the char at position with every letter in the alphabet
-	private Set<Candidate> generateSubstitutions(String word, int pos, Dictionary words) {
+	private Set<Candidate> generateSubstitutions(String query, int pos, Dictionary words) {
 		Set<Candidate> subs = new HashSet<Candidate>();
 		for(char ch : alphabet) {
-			char[] c = word.toCharArray();
+			char[] c = query.toCharArray();
 			char original = c[pos];
 			c[pos] = ch;
 			String candidateString = new String(c);
-			if(words.count(candidateString) != 0) {
+			if(allValidWords(candidateString, words)) {
 				ArrayList<Edit> edits = new ArrayList<Edit>();
 				// Original char is char at pos, replacement char is alphabet letter
 				edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch));
@@ -167,15 +175,15 @@ public class CandidateGenerator implements Serializable {
 
 	// Given a position and word, remove char at position in word
 	// return in a set for consistency
-	private Set<Candidate> generateDeletions(String word, int pos, Dictionary words) {
+	private Set<Candidate> generateDeletions(String query, int pos, Dictionary words) {
 		Set<Candidate> deletes = new HashSet<Candidate>();
-		String candidateString = word.substring(0, pos) + word.substring(pos+1);
-		if(words.count(candidateString) != 0) {
+		String candidateString = query.substring(0, pos) + query.substring(pos+1);
+		if(allValidWords(candidateString, words)) {
 			// Original char is char at pos, replacement char is no_char
 			String original = "";
-			if(pos > 0) original += word.charAt(pos-1);
+			if(pos > 0) original += query.charAt(pos-1);
 			ArrayList<Edit> edits = new ArrayList<Edit>();
-			edits.add(new Edit(Edit.EditType.DELETION, original, "" + word.charAt(pos)));
+			edits.add(new Edit(Edit.EditType.DELETION, original, "" + query.charAt(pos)));
 			deletes.add(new Candidate(candidateString, 1, edits));
 		}
 		return deletes;
@@ -184,19 +192,19 @@ public class CandidateGenerator implements Serializable {
 	// Given a current position and next position,
 	// swap the chars at those positions
 	// return resulting string in a set for consistency
-	private Set<Candidate> generateTranspositions(String word, int curr, int next, Dictionary words) {
+	private Set<Candidate> generateTranspositions(String query, int curr, int next, Dictionary words) {
 		Set<Candidate> trans = new HashSet<Candidate>();
 
 		// Char Array idea from Stack Overflow
-		char[] c = word.toCharArray();
+		char[] c = query.toCharArray();
 		char temp = c[curr];
 		c[curr] = c[next];
 		c[curr] = temp;
 		String candidateString = new String(c);
-		if(words.count(candidateString) != 0) {
+		if(allValidWords(candidateString, words)) {
 			ArrayList<Edit> edits = new ArrayList<Edit>();
 			// Original char is char at curr, replacement char is char at next
-			edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+word.charAt(curr), ""+word.charAt(next)));
+			edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+query.charAt(curr), ""+query.charAt(next)));
 			trans.add(new Candidate(candidateString, 1, edits));
 		}
 		return trans;
@@ -206,16 +214,16 @@ public class CandidateGenerator implements Serializable {
 	// Given a word, generates all candidates that are 1
 	// insertion, deletion, substitution, and transposition
 	// away from given word
-	private Set<Candidate> editOneCandidates(String queryWord, Dictionary words) {
+	private Set<Candidate> editOneCandidates(String query, Dictionary words) {
 		Set<Candidate> editCandidates = new HashSet<Candidate>();
 		// for each position in the query word
-		for(int i = 0; i < queryWord.length(); i++) {
-			Set<Candidate> inserts = generateInsertions(queryWord, i, words);
-			Set<Candidate> subs = generateSubstitutions(queryWord, i, words);
-			Set<Candidate> deletes = generateDeletions(queryWord, i, words);
+		for(int i = 0; i < query.length(); i++) {
+			Set<Candidate> inserts = generateInsertions(query, i, words);
+			Set<Candidate> subs = generateSubstitutions(query, i, words);
+			Set<Candidate> deletes = generateDeletions(query, i, words);
 			Set<Candidate> trans = new HashSet<Candidate>();
 			if(i > 0) {
-				trans = generateTranspositions(queryWord, i-1, i, words);
+				trans = generateTranspositions(query, i-1, i, words);
 			}
 			// Add all different edits to the candidate sets for the query word
 			for(Candidate candidate : inserts) {
@@ -234,25 +242,22 @@ public class CandidateGenerator implements Serializable {
 		return editCandidates;
 	}
 
-	public ArrayList<ArrayList<Candidate>> getCandidates(String query, Dictionary unigram) {
-		StringTokenizer st = new StringTokenizer(query);
-		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
-		while(st.hasMoreTokens()){
-			String queryWord = st.nextToken();
-			candidateSets.add(editOneCandidates(queryWord, unigram));
-		}
+	public Set<Candidate> getCandidates(String query, Dictionary unigram) {
+//		StringTokenizer st = new StringTokenizer(query);
+//		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
+		return editOneCandidates(query, unigram);
 		
-		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
-		for(Set<Candidate> set : candidateSets) {
-			ArrayList<Candidate> list = new ArrayList<Candidate>();
-			for(Candidate candidate : set) {
-				list.add(candidate);
-			}
-			candidateLists.add(list);
-		}
+//		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
+//		for(Set<Candidate> set : candidateSets) {
+//			ArrayList<Candidate> list = new ArrayList<Candidate>();
+//			for(Candidate candidate : set) {
+//				list.add(candidate);
+//			}
+//			candidateLists.add(list);
+//		}
 
 		// Generate Cartesian product for candidate sets
-		return cartesianProduct(candidateLists);
+//		return cartesianProduct(candidateLists);
 	}
 
 }
