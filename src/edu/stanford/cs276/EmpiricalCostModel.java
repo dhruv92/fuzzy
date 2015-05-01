@@ -29,10 +29,7 @@ public class EmpiricalCostModel implements EditCostModel{
 			String noisy = lineSc.next();
 			String clean = lineSc.next();
 			
-			// Determine type of error and record probability
-			/*
-			 * Your code here
-			 */
+			// Determine type of error and record probability -- records counts in matrices
 			updateDictionaries(clean);
 			if (noisy.length() > clean.length()) { //is ins
 				insertionCounts(noisy, clean);
@@ -132,6 +129,8 @@ public class EmpiricalCostModel implements EditCostModel{
 
 	
 	// You need to update this to calculate the proper empirical cost
+	// This method takes into account the edits, calculates the probabilities, does LaPlace smoothing
+	// and then out puts them as a log probability
 	@Override
 	public double editProbability(String original, String R, int distance) {
 		return 0.5;
