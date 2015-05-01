@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import edu.stanford.cs276.util.Candidate;
+import edu.stanford.cs276.util.Edit;
 import edu.stanford.cs276.util.Pair;
 import edu.stanford.cs276.util.Dictionary;
 
@@ -61,34 +62,58 @@ public class CandidateGenerator implements Serializable {
 	//	}
 
 
-	// Recursively generates the cartesian product for all sets
-	private Set<Candidate> cartesianProduct(ArrayList<Set<Candidate>> remainder){
-		Set<Candidate> result = new HashSet<Candidate>();
-		if(remainder.size() == 1) return remainder.get(0);
-		Set<Candidate> current = remainder.get(0);
-		ArrayList<Set<Candidate>> remainder_cpy = new ArrayList<Set<Candidate>>();
-		for(Set<Candidate> set : remainder){
-			remainder_cpy.add(set);
-		}
-		remainder_cpy.remove(0);
-		for(Candidate candidate_word : current){
-			for(Candidate candidate_str : cartesianProduct(remainder_cpy)){
-				String str = candidate_word.getCandidate() + " " + candidate_str.getCandidate();
-				int distance = candidate_word.getDistance() + candidate_str.getDistance();
-				ArrayList<Character> edits = new ArrayList<Character>();
-				for(char edit : candidate_word.getEdits()) {
-					edits.add(edit);
-				}
-				for(char edit : candidate_str.getEdits()) {
-					edits.add(edit);
-				}
-				if(distance <= 2) {
-					result.add(new Candidate(str, distance, edits));
-				}
-			}
-		}
-		return result;
+	private ArrayList<ArrayList<Candidate>> cartesianProduct(ArrayList<ArrayList<Candidate>> sets) {
+	    if (sets.size() < 2)
+	        throw new IllegalArgumentException(
+	                "Can't have a product of fewer than two sets (got " +
+	                sets.size() + ")");
+
+	    return _cartesianProduct(0, sets);
 	}
+
+	private static ArrayList<ArrayList<Candidate>> _cartesianProduct(int index, ArrayList<ArrayList<Candidate>> sets) {
+		ArrayList<ArrayList<Candidate>> ret = new ArrayList<ArrayList<Candidate>>();
+	    if (index == sets.size()) {
+	        ret.add(new ArrayList<Candidate>());
+	    } else {
+	        for (Candidate obj : sets.get(index)) {
+	            for (ArrayList<Candidate> set : _cartesianProduct(index+1, sets)) {
+	                set.add(obj);
+	                ret.add(set);
+	            }
+	        }
+	    }
+	    return ret;
+	}
+	
+	// Recursively generates the cartesian product for all sets
+//	private Set<Set<Candidate>> cartesianProduct(ArrayList<Set<Candidate>> remainder){
+//		Set<Candidate> result = new HashSet<Candidate>();
+//		if(remainder.size() == 1) return remainder.get(0);
+//		Set<Candidate> current = remainder.get(0);
+//		ArrayList<Set<Candidate>> remainder_cpy = new ArrayList<Set<Candidate>>();
+//		for(Set<Candidate> set : remainder){
+//			remainder_cpy.add(set);
+//		}
+//		remainder_cpy.remove(0);
+//		for(Candidate candidate_word : current){
+//			for(Candidate candidate_str : cartesianProduct(remainder_cpy)){
+//				String str = candidate_word.getCandidate() + " " + candidate_str.getCandidate();
+//				int distance = candidate_word.getDistance() + candidate_str.getDistance();
+//				ArrayList<Character> edits = new ArrayList<Character>();
+//				for(char edit : candidate_word.getEdits()) {
+//					edits.add(edit);
+//				}
+//				for(char edit : candidate_str.getEdits()) {
+//					edits.add(edit);
+//				}
+//				if(distance <= 2) {
+//					result.add(new Candidate(str, distance, edits));
+//				}
+//			}
+//		}
+//		return result;
+//	}
 
 	// Generate all candidates for the target query TRIGRAMS
 	//	public Set<String> getCandidates(String query, 	Map<Integer, Set<Integer>> trigramDict,
@@ -105,98 +130,125 @@ public class CandidateGenerator implements Serializable {
 	//		return cartesianProduct(candidateSets);
 	//	}
 
-	private Set<String> generateInsertions(String word, int pos, Dictionary words) {
-		Set<String> inserts = new HashSet<String>();
+	// Given a word and pos, insert every letter in the alphabet at that position
+	private Set<Candidate> generateInsertions(String word, int pos, Dictionary words) {
+		Set<Candidate> inserts = new HashSet<Candidate>();
 		for(char ch : alphabet) {
-			String candidate = word.substring(0, pos) + ch + word.substring(pos);
-			if(words.count(candidate) != 0) {
-				inserts.add(candidate);
+			String candidateString = word.substring(0, pos) + ch + word.substring(pos);
+			if(words.count(candidateString) != 0) {
+				// Original char is char before insertion, replacement char is alphabet letter
+				String original = "";
+				if(pos > 0) original += word.charAt(pos-1);
+				Edit edit = new Edit(Edit.EditType.INSERTION, "" + word.charAt(pos), "" + ch);
+				inserts.add(new Candidate(candidateString, 1, edit));
 			}
 		}
 		return inserts;
 	}
 
-	private Set<String> generateSubstitutions(String word, int pos, Dictionary words) {
-		Set<String> subs = new HashSet<String>();
+	// Given a start word and position, swap the char at position with every letter in the alphabet
+	private Set<Candidate> generateSubstitutions(String word, int pos, Dictionary words) {
+		Set<Candidate> subs = new HashSet<Candidate>();
 		for(char ch : alphabet) {
-			String candidate = word.substring(0, pos) + ch + word.substring(pos+1);
-			if(words.count(candidate) != 0) {
-				subs.add(candidate);
+			char[] c = word.toCharArray();
+			char original = c[pos];
+			c[pos] = ch;
+			String candidateString = new String(c);
+			if(words.count(candidateString) != 0) {
+				// Original char is char at pos, replacement char is alphabet letter
+				Edit edit = new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch);
+				subs.add(new Candidate(candidateString, 2, edit));
 			}
 		}
 		return subs;
 	}
 
-	private Set<String> generateDeletions(String word, int pos, Dictionary words) {
-		Set<String> deletes = new HashSet<String>();
-		String candidate = word.substring(0, pos) + word.substring(pos+1);
-		if(words.count(candidate) != 0) {
-			deletes.add(candidate);
+	// Given a position and word, remove char at position in word
+	// return in a set for consistency
+	private Set<Candidate> generateDeletions(String word, int pos, Dictionary words) {
+		Set<Candidate> deletes = new HashSet<Candidate>();
+		String candidateString = word.substring(0, pos) + word.substring(pos+1);
+		if(words.count(candidateString) != 0) {
+			// Original char is char at pos, replacement char is no_char
+			String original = "";
+			if(pos > 0) original += word.charAt(pos-1);
+			Edit edit = new Edit(Edit.EditType.DELETION, original, "" + word.charAt(pos));
+			deletes.add(new Candidate(candidateString, 1, edit));
 		}
 		return deletes;
 	}
 
-	private Set<String> generateTranspositions(String word, int curr, int next, Dictionary words) {
-		Set<String> trans = new HashSet<String>();
+	// Given a current position and next position,
+	// swap the chars at those positions
+	// return resulting string in a set for consistency
+	private Set<Candidate> generateTranspositions(String word, int curr, int next, Dictionary words) {
+		Set<Candidate> trans = new HashSet<Candidate>();
 
 		// Char Array idea from Stack Overflow
 		char[] c = word.toCharArray();
 		char temp = c[curr];
 		c[curr] = c[next];
 		c[curr] = temp;
-		String candidate = new String(c);
-		if(words.count(candidate) != 0) {
-			trans.add(candidate);
+		String candidateString = new String(c);
+		if(words.count(candidateString) != 0) {
+			// Original char is char at curr, replacement char is char at next
+			Edit edit = new Edit(Edit.EditType.TRANSPOSITION, ""+word.charAt(curr), ""+word.charAt(next));
+			trans.add(new Candidate(candidateString, 1, edit));
 		}
 		return trans;
 	}
 
 
+	// Given a word, generates all candidates that are 1
+	// insertion, deletion, substitution, and transposition
+	// away from given word
 	private Set<Candidate> editOneCandidates(String queryWord, Dictionary words) {
 		Set<Candidate> editCandidates = new HashSet<Candidate>();
+		// for each position in the query word
 		for(int i = 0; i < queryWord.length(); i++) {
-			Set<String> inserts = generateInsertions(queryWord, i, words);
-			Set<String> subs = generateSubstitutions(queryWord, i, words);
-			Set<String> deletes = generateDeletions(queryWord, i, words);
-			Set<String> trans = new HashSet<String>();
+			Set<Candidate> inserts = generateInsertions(queryWord, i, words);
+			Set<Candidate> subs = generateSubstitutions(queryWord, i, words);
+			Set<Candidate> deletes = generateDeletions(queryWord, i, words);
+			Set<Candidate> trans = new HashSet<Candidate>();
 			if(i > 0) {
 				trans = generateTranspositions(queryWord, i-1, i, words);
 			}
-
-			for(String candidate : inserts) {
-				ArrayList<Character> in = new ArrayList<Character>();
-				in.add('i');
-				editCandidates.add(new Candidate(candidate, 1, in));
+			// Add all different edits to the candidate sets for the query word
+			for(Candidate candidate : inserts) {
+				editCandidates.add(candidate);
 			}
-			for(String candidate : subs) {
-				ArrayList<Character> in = new ArrayList<Character>();
-				in.add('s');
-				editCandidates.add(new Candidate(candidate, 2, in));
+			for(Candidate candidate : subs) {
+				editCandidates.add(candidate);
 			}
-			for(String candidate : deletes) {
-				ArrayList<Character> in = new ArrayList<Character>();
-				in.add('d');
-				editCandidates.add(new Candidate(candidate, 1, in));
+			for(Candidate candidate : deletes) {
+				editCandidates.add(candidate);
 			}
-			for(String candidate : trans) {
-				ArrayList<Character> in = new ArrayList<Character>();
-				in.add('t');
-				editCandidates.add(new Candidate(candidate, 1, in));
+			for(Candidate candidate : trans) {
+				editCandidates.add(candidate);
 			}
 		}
 		return editCandidates;
 	}
 
-	public Set<Candidate> getCandidates(String query, Dictionary unigram) {
+	public ArrayList<ArrayList<Candidate>> getCandidates(String query, Dictionary unigram) {
 		StringTokenizer st = new StringTokenizer(query);
-		ArrayList<Set<Candidate>> candidateSets = new ArrayList<Set<Candidate>>();
+		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
 		while(st.hasMoreTokens()){
 			String queryWord = st.nextToken();
 			candidateSets.add(editOneCandidates(queryWord, unigram));
 		}
+		
+		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
+		for(Set<Candidate> set : candidateSets) {
+			ArrayList<Candidate> list = new ArrayList<Candidate>();
+			for(Candidate candidate : set) {
+				list.add(candidate);
+			}
+			candidateLists.add(list);
+		}
 
 		// Generate Cartesian product for candidate sets
-		return cartesianProduct(candidateSets);
+		return cartesianProduct(candidateLists);
 	}
 
 }

@@ -8,12 +8,12 @@ public class Candidate implements Serializable {
 
 	private String candidateWord;
 	private int editDistance;
-	private ArrayList<Character> edits;
+	private Edit edit;
 
-	public Candidate(String candidateWord, int editDistance, ArrayList<Character> edits) {
+	public Candidate(String candidateWord, int editDistance, Edit edit) {
 		this.candidateWord = candidateWord;
 		this.editDistance = editDistance;
-		this.edits = edits;
+		this.edit = edit;
 	}
 	
 	public String getCandidate() {
@@ -24,9 +24,9 @@ public class Candidate implements Serializable {
 		return editDistance;
 	}
 	
-	public ArrayList<Character> getEdits() {
-		return edits;
+	public Edit getEdit() {
+		return edit;
 	}
 	
-	//public toString
+	// public toString
 }
