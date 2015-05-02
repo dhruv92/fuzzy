@@ -53,7 +53,8 @@ public class LanguageModel implements Serializable {
 		System.out.println("          Unigram: " + word);
 		System.out.println("          UnigramFrac: " + unigram.count(word) + " / " + unigram.termCount());
 		
-		double result = Math.log(unigram.count(word)) - Math.log(unigram.termCount());
+//		double result = Math.log(unigram.count(word)) - Math.log(unigram.termCount());
+		double result = (double)unigram.count(word) / unigram.termCount();
 		System.out.println("          UnigramProb: " + result);
 		return result;
 	}
@@ -64,10 +65,14 @@ public class LanguageModel implements Serializable {
 	// Note this method converts to log space before outputting the probability
 	private double bigramProb(String first, String second) {
 		System.out.println("          Bigram: " + first + "," + second);
-		System.out.println("          BigramFrac: " + countBigramDict(first, second)+1 + " / " + unigram.count(first));
-		double bigramProb = Math.log(countBigramDict(first, second)) - Math.log(unigram.count(first));
+		System.out.println("          BigramFrac: " + countBigramDict(first, second) + " / " + unigram.count(first));
+//		double bigramProb = Math.log(countBigramDict(first, second)) - Math.log(unigram.count(first));
+		double bigramProb = (double)countBigramDict(first, second) / unigram.count(first);
 		System.out.println("          BigramProb: " + bigramProb);
-		return INTERPOLATION_LAMDA * unigramProb(second) + (1 - INTERPOLATION_LAMDA) * (bigramProb);
+		double interpProb = Math.log(INTERPOLATION_LAMDA * unigramProb(second) + (1 - INTERPOLATION_LAMDA) * (bigramProb));
+		System.out.println("          InterpolationProb: " + interpProb);
+		
+		return interpProb;
 	}
 	
 	Dictionary unigram = new Dictionary();

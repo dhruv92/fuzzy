@@ -16,5 +16,5 @@ public class UniformCostModel implements EditCostModel {
 	
 	//we should play with these numbers
 	private static final double EQUAL_PROBABILITY = 0.90;
-	private static final double EDIT_PROBABILITY = 0.1;
+	private static final double EDIT_PROBABILITY = 0.01;
 }
