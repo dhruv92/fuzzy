@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-<<<<<<< HEAD
-=======
 
->>>>>>> a41dc2a693e77053f93248274c9ac7c9be9873a6
 import edu.stanford.cs276.util.Candidate;
 import edu.stanford.cs276.util.Pair;
 
