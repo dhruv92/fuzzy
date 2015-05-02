@@ -3,14 +3,12 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import edu.stanford.cs276.util.Candidate;
 import edu.stanford.cs276.util.Pair;
+
 
 public class RunCorrector {
 
