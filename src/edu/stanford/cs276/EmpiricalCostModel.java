@@ -146,6 +146,7 @@ public class EmpiricalCostModel implements EditCostModel{
 			Pair<String, String> change = edit.getChange();
 			switch (et) {
 				case INSERTION:
+<<<<<<< HEAD
 					double insCount = (insertionMatrix.containsKey(change)) ? insertionMatrix.get(change) +1 : 1; //1 for smoothing
 					double beforeCount = charCounts.count(change.getFirst()) + charCounts.getUniqueKeyCount(); // smoothing, add alphabet
 					probability += Math.log(insCount / beforeCount);
@@ -165,6 +166,27 @@ public class EmpiricalCostModel implements EditCostModel{
 				case SUBSTITUTION:
 					double subCount = (substitutionMatrix.containsKey(change)) ? substitutionMatrix.get(change) +1 : 1;
 					double replaceCount = charCounts.count(change.getSecond()) + charCounts.getUniqueKeyCount();
+=======
+					int insCount = (insertionMatrix.containsKey(change)) ? insertionMatrix.get(change) : 1; //1 for smoothing
+					int beforeCount = charCounts.count(change.getFirst()) + charCounts.getUniqueKeyCount(); // smoothing, add alphabet
+					probability += Math.log(insCount / beforeCount);
+					break;
+				case DELETION:
+					int delCount = (deletionMatrix.containsKey(change)) ? deletionMatrix.get(change) : 1;
+					String bigram = change.getFirst() + change.getSecond();
+					int seqCount = bigramCounts.count(bigram) + bigramCounts.getUniqueKeyCount();
+					probability += Math.log(delCount / seqCount);
+					break;
+				case TRANSPOSITION:
+					int traCount = (transpositionMatrix.containsKey(change)) ? transpositionMatrix.get(change) : 1;
+					String big = change.getFirst() + change.getSecond();
+					int seqC = bigramCounts.count(big) + bigramCounts.getUniqueKeyCount();
+					probability += Math.log(traCount / seqC);
+					break;
+				case SUBSTITUTION:
+					int subCount = (substitutionMatrix.containsKey(change)) ? substitutionMatrix.get(change) : 1;
+					int replaceCount = charCounts.count(change.getSecond()) + charCounts.getUniqueKeyCount();
+>>>>>>> a41dc2a693e77053f93248274c9ac7c9be9873a6
 					probability += Math.log(subCount / replaceCount);
 					break;
 				default:
