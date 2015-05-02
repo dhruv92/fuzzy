@@ -139,6 +139,8 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Given a word and pos, insert every letter in the alphabet at that position
+	// You're guessing that the original query was this new query with an insertion & that
+	// the user actually deleted this character by accident
 	private Set<Candidate> generateInsertions(String query, int pos, Dictionary words) {
 		Set<Candidate> inserts = new HashSet<Candidate>();
 		for(char ch : alphabet) {
@@ -148,7 +150,7 @@ public class CandidateGenerator implements Serializable {
 				// Original char is char before insertion, replacement char is alphabet letter
 				String original = "";
 				if(pos > 0) original += query.charAt(pos-1);
-				edits.add(new Edit(Edit.EditType.INSERTION, "" + query.charAt(pos), "" + ch));
+				edits.add(new Edit(Edit.EditType.DELETION, "" + query.charAt(pos), "" + ch));
 				inserts.add(new Candidate(candidateString, 1, edits));
 			}
 		}
@@ -156,6 +158,8 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Given a start word and position, swap the char at position with every letter in the alphabet
+	// You're guessing that the original query was the new substituted query & that
+	// the user actually substituted it with whatever was there before by accident
 	private Set<Candidate> generateSubstitutions(String query, int pos, Dictionary words) {
 		Set<Candidate> subs = new HashSet<Candidate>();
 		for(char ch : alphabet) {
@@ -166,8 +170,8 @@ public class CandidateGenerator implements Serializable {
 				String candidateString = new String(c);
 				if(allValidWords(candidateString, words)) {
 					ArrayList<Edit> edits = new ArrayList<Edit>();
-					// Original char is char at pos, replacement char is alphabet letter
-					edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + original, "" + ch));
+					// Original char is char at pos for user query, replacement char is alphabet letter
+					edits.add(new Edit(Edit.EditType.SUBSTITUTION, "" + ch, "" + original));
 					subs.add(new Candidate(candidateString, 2, edits));
 				}
 			}
@@ -176,7 +180,8 @@ public class CandidateGenerator implements Serializable {
 	}
 
 	// Given a position and word, remove char at position in word
-	// return in a set for consistency
+	// You're guessing that the original query was this new query without the char & that
+	// the user actually inserted this character by accident
 	private Set<Candidate> generateDeletions(String query, int pos, Dictionary words) {
 		Set<Candidate> deletes = new HashSet<Candidate>();
 		String candidateString = query.substring(0, pos) + query.substring(pos+1);
@@ -185,7 +190,7 @@ public class CandidateGenerator implements Serializable {
 			String original = "";
 			if(pos > 0) original += query.charAt(pos-1);
 			ArrayList<Edit> edits = new ArrayList<Edit>();
-			edits.add(new Edit(Edit.EditType.DELETION, original, "" + query.charAt(pos)));
+			edits.add(new Edit(Edit.EditType.INSERTION, original, "" + query.charAt(pos)));
 			deletes.add(new Candidate(candidateString, 1, edits));
 		}
 		return deletes;
@@ -194,6 +199,8 @@ public class CandidateGenerator implements Serializable {
 	// Given a current position and next position,
 	// swap the chars at those positions
 	// return resulting string in a set for consistency
+	// You're guessing that the original query was this new query with the transpose & that
+	// the user actually swapped the two by accident
 	private Set<Candidate> generateTranspositions(String query, int curr, int next, Dictionary words) {
 		Set<Candidate> trans = new HashSet<Candidate>();
 
@@ -207,7 +214,7 @@ public class CandidateGenerator implements Serializable {
 			if(allValidWords(candidateString, words)) {
 				ArrayList<Edit> edits = new ArrayList<Edit>();
 				// Original char is char at curr, replacement char is char at next
-				edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+query.charAt(curr), ""+query.charAt(next)));
+				edits.add(new Edit(Edit.EditType.TRANSPOSITION, ""+query.charAt(next), ""+query.charAt(curr)));
 				trans.add(new Candidate(candidateString, 1, edits));
 			}
 		}
