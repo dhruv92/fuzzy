@@ -88,26 +88,16 @@ public class RunCorrector {
 
 			String correctedQuery = query;
 			CandidateGenerator cg = CandidateGenerator.get();
-			// Generate candidates
-			//			Set<String> candidates = cg.getCandidates(query, 	languageModel.getTrigramDict(),
-			//																languageModel.getTermLookup(),
-			//																languageModel.getTrigramIdDict());
 
 			Set<Candidate> candidateSet = cg.getCandidates(query, languageModel.unigram);
 			Double maxProbability = Double.NEGATIVE_INFINITY;
 			// Find that candidate that produces the max languageModel * noisyChannelModel probability
-			System.out.println("NumCandidates: " + candidateSet.size());
-			System.out.println("Query: " + query);
 			for(Candidate candidate : candidateSet) {
-				System.out.println("     Candidate: " + candidate.toString());
 				int distance = candidate.getDistance();
 				if (distance <= 2) {
 					double probability = NoisyChannelModel.calculateCandidateProbability(candidate, query);
-					System.out.println("     NoisyChannelProb: " + probability);
 					double languageProbability = languageModel.calculateQueryProbability(candidate.getCandidate());
-					System.out.println("     LanguageChannelProb: " + languageProbability);
 					probability += languageProbability;
-					System.out.println("     Probability: " + probability);
 					if (probability > maxProbability) {
 						maxProbability = probability;
 						correctedQuery = candidate.getCandidate();
@@ -137,14 +127,14 @@ public class RunCorrector {
 				}
 				totalCount++;
 			}
-			System.out.println(correctedQuery);
+			//System.out.println(correctedQuery);
 		}
 		System.out.println(yourCorrectCount + " / " + totalCount);
 
 		queriesFileReader.close();
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println("RUNNING TIME: "+totalTime/1000+" seconds ");
+		//System.out.println("RUNNING TIME: "+totalTime/1000+" seconds ");
 	}
 
 	// Calculate Levenshtein Distance between two strings

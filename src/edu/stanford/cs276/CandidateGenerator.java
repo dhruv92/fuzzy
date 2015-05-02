@@ -15,7 +15,6 @@ public class CandidateGenerator implements Serializable {
 
 
 	private static CandidateGenerator cg_;
-	//	private static trigramDict;
 
 	// Don't use the constructor since this is a Singleton instance
 	private CandidateGenerator() {}
@@ -33,33 +32,6 @@ public class CandidateGenerator implements Serializable {
 		'o','p','q','r','s','t','u','v','w','x','y','z',
 		'0','1','2','3','4','5','6','7','8','9',
 		' ',',','\''};
-
-	// Given a word, goes through every trigram in the word
-	// For each trigram, looks up the word set for that trigram dictionary
-	// Returns a set of all elements from each word set
-	//	private Set<String> trigramLists(String queryWord, 	Map<Integer, Set<Integer>> trigramDict,
-	//														Map<Integer, String> termLookup,
-	//														Map<String, Integer> trigramIdDict){
-	//		Set<String> candidateSet = new HashSet<String>();
-	//		if(queryWord.length() >= 3){
-	//			for(int i = 2; i < queryWord.length(); i++){
-	//				String trigram = "" + queryWord.charAt(i-2) + queryWord.charAt(i-1) + queryWord.charAt(i);
-	//				if(trigramIdDict.containsKey(trigram)){
-	//					int trigramId = trigramIdDict.get(trigram);
-	//					if (trigramDict.containsKey(trigramId)) {
-	//						Set<Integer> termIdSet = trigramDict.get(trigramId);
-	//						for(int candidateId : termIdSet){
-	//							if(termLookup.containsKey(candidateId)){
-	//								candidateSet.add(termLookup.get(candidateId));
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//
-	//		return candidateSet;
-	//	}
 
 
 	private ArrayList<ArrayList<Candidate>> cartesianProduct(ArrayList<ArrayList<Candidate>> sets) {
@@ -85,50 +57,6 @@ public class CandidateGenerator implements Serializable {
 		}
 		return ret;
 	}
-
-	// Recursively generates the cartesian product for all sets
-	//	private Set<Set<Candidate>> cartesianProduct(ArrayList<Set<Candidate>> remainder){
-	//		Set<Candidate> result = new HashSet<Candidate>();
-	//		if(remainder.size() == 1) return remainder.get(0);
-	//		Set<Candidate> current = remainder.get(0);
-	//		ArrayList<Set<Candidate>> remainder_cpy = new ArrayList<Set<Candidate>>();
-	//		for(Set<Candidate> set : remainder){
-	//			remainder_cpy.add(set);
-	//		}
-	//		remainder_cpy.remove(0);
-	//		for(Candidate candidate_word : current){
-	//			for(Candidate candidate_str : cartesianProduct(remainder_cpy)){
-	//				String str = candidate_word.getCandidate() + " " + candidate_str.getCandidate();
-	//				int distance = candidate_word.getDistance() + candidate_str.getDistance();
-	//				ArrayList<Character> edits = new ArrayList<Character>();
-	//				for(char edit : candidate_word.getEdits()) {
-	//					edits.add(edit);
-	//				}
-	//				for(char edit : candidate_str.getEdits()) {
-	//					edits.add(edit);
-	//				}
-	//				if(distance <= 2) {
-	//					result.add(new Candidate(str, distance, edits));
-	//				}
-	//			}
-	//		}
-	//		return result;
-	//	}
-
-	// Generate all candidates for the target query TRIGRAMS
-	//	public Set<String> getCandidates(String query, 	Map<Integer, Set<Integer>> trigramDict,
-	//													Map<Integer, String> termLookup,
-	//													Map<String, Integer> trigramIdDict) throws Exception {
-	//		StringTokenizer st = new StringTokenizer(query);
-	//		ArrayList<Set<String>> candidateSets = new ArrayList<Set<String>>();
-	//		while(st.hasMoreTokens()){
-	//			String queryWord = st.nextToken();
-	//			candidateSets.add(trigramLists(queryWord, trigramDict, termLookup, trigramIdDict));
-	//		}
-	//
-	//		// Generate Cartesian product for candidate sets
-	//		return cartesianProduct(candidateSets);
-	//	}
 
 	private boolean allValidWords(String query, Dictionary words) {
 		StringTokenizer st = new StringTokenizer(query);
@@ -255,26 +183,12 @@ public class CandidateGenerator implements Serializable {
 
 	public Set<Candidate> getCandidates(String query, Dictionary unigram) {
 		Set<Candidate> candidates = new HashSet<Candidate>();
-		//		StringTokenizer st = new StringTokenizer(query);
-		//		Set<Set<Candidate>> candidateSets = new HashSet<Set<Candidate>>();
 		candidates.add(new Candidate(query, 0, new ArrayList<Edit>()));
 		Set<Candidate> editCandidates = editOneCandidates(query, unigram);
 		for(Candidate candidate : editCandidates) {
 			candidates.add(candidate);
 		}
 		return candidates;
-
-		//		ArrayList<ArrayList<Candidate>> candidateLists = new ArrayList<ArrayList<Candidate>>();
-		//		for(Set<Candidate> set : candidateSets) {
-		//			ArrayList<Candidate> list = new ArrayList<Candidate>();
-		//			for(Candidate candidate : set) {
-		//				list.add(candidate);
-		//			}
-		//			candidateLists.add(list);
-		//		}
-
-		// Generate Cartesian product for candidate sets
-		//		return cartesianProduct(candidateLists);
 	}
 
 }

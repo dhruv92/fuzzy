@@ -37,7 +37,7 @@ public class LanguageModel implements Serializable {
 		
 		StringTokenizer queryTokenizer = new StringTokenizer(query);
 		String firstWord = queryTokenizer.nextToken();
-		double probability = unigramProb(firstWord);
+		double probability = Math.log(unigramProb(firstWord));
 		String lastWord = firstWord;
 		while (queryTokenizer.hasMoreTokens()) {
 			String nextWord = queryTokenizer.nextToken();
@@ -50,63 +50,26 @@ public class LanguageModel implements Serializable {
 	// Output uni gram probability of a word based on the training corpus in log space. 
 	// Note this method converts to log space before outputting the probability
 	private double unigramProb(String word) {
-		System.out.println("          Unigram: " + word);
-		System.out.println("          UnigramFrac: " + unigram.count(word) + " / " + unigram.termCount());
-		
-//		double result = Math.log(unigram.count(word)) - Math.log(unigram.termCount());
 		double result = (double)unigram.count(word) / unigram.termCount();
-		System.out.println("          UnigramProb: " + result);
 		return result;
 	}
 	
-	private static final double INTERPOLATION_LAMDA = 0.1;
+	private static final double INTERPOLATION_LAMDA = 0.05;
 	
 	// Output the interpolated bigram probability of a pair of words
 	// Note this method converts to log space before outputting the probability
 	private double bigramProb(String first, String second) {
-		System.out.println("          Bigram: " + first + "," + second);
-		System.out.println("          BigramFrac: " + countBigramDict(first, second) + " / " + unigram.count(first));
-//		double bigramProb = Math.log(countBigramDict(first, second)) - Math.log(unigram.count(first));
 		double bigramProb = (double)countBigramDict(first, second) / unigram.count(first);
-		System.out.println("          BigramProb: " + bigramProb);
 		double interpProb = Math.log(INTERPOLATION_LAMDA * unigramProb(second) + (1 - INTERPOLATION_LAMDA) * (bigramProb));
-		System.out.println("          InterpolationProb: " + interpProb);
 		
 		return interpProb;
 	}
 	
 	Dictionary unigram = new Dictionary();
-	// vocab is only distinct terms, helpful for smoothing
-//	Set<String> vocab = new HashSet<String>();
 	
 	// Added a bigram dictionary to make bigram calculations easier
 	Map<Pair<String, String>, Integer> bigramDict = new HashMap<Pair<String, String>, Integer>();
 	
-	// Added a trigram (char, not word) dictionary to help with candidate generation
-	// Maps trigram to all words containing that trigram in document set
-	// e.g. "app" -> ["apple","apples","applicant","application",...]
-//	Map<String, Set<String>> trigramDict = new HashMap<String, Set<String>>();
-	
-	// trigram -> (set of words) is too expensive in space, will use
-	// trigramIds and termIds to convert strings to ints
-	// this must be written to disk
-//	Map<Integer, Set<Integer>> trigramDict = new HashMap<Integer, Set<Integer>>();
-	
-	// trigram -> trigramId
-	// this must be written to disk
-//	Map<String, Integer> trigramIdDict = new HashMap<String, Integer>();
-	
-	// word -> termId
-	// static so it is not written to disk
-//	static Map<String, Integer> termIdDict = new HashMap<String, Integer>();
-	
-	// trigramId -> trigram
-	// static so it is not written to disk
-//	static Map<Integer, String> trigramLookup = new HashMap<Integer, String>();
-	
-	// termId -> word
-	// this must be written to disk
-//	Map<Integer, String> termLookup = new HashMap<Integer, String>();
 	
 	// Do not call constructor directly since this is a Singleton
 	private LanguageModel(String corpusFilePath) throws Exception {
@@ -127,17 +90,13 @@ public class LanguageModel implements Serializable {
 			BufferedReader input = new BufferedReader(new FileReader(file));
 			String line = null;
 			while ((line = input.readLine()) != null) {
-				/* This section of the code parses the line into trigram, bigram, and unigram dictionaries */
+				/* This section of the code parses the line into bigram and unigram dictionaries */
 				StringTokenizer tokenizer = new StringTokenizer(line);
 				String lastWord = tokenizer.nextToken();
 				unigram.add(lastWord);
-//				vocab.add(lastWord);
-//				addToTrigramDict(lastWord);
 				while (tokenizer.hasMoreTokens()) {
 					String nextWord = tokenizer.nextToken();
 					unigram.add(nextWord);
-//					vocab.add(nextWord);
-//					addToTrigramDict(nextWord);
 					addToBigramDict(lastWord, nextWord);
 					lastWord = nextWord;
 				}
@@ -157,60 +116,6 @@ public class LanguageModel implements Serializable {
 		}
 	}
 	
-	// This helper method splits a words into its trigrams and adds them to the dictionary
-//	private void addToTrigramDict(String word) {
-//		// Assume word is new to termIdDict,
-//		int termId = termIdDict.keySet().size();
-//		// If word is not new, assign actual termId
-//		if(termIdDict.containsKey(word)) {
-//			termId = termIdDict.get(word);
-//		} else {
-//			termIdDict.put(word, termId);
-//			termLookup.put(termId, word);
-//		}
-//		if(word.length() >= 3) {
-//			for (int i = 2; i < word.length(); i++) {
-//				String trigram = "" + word.charAt(i-2) + word.charAt(i-1) + word.charAt(i);
-//				int trigramId = trigramIdDict.keySet().size();
-//				if(trigramIdDict.containsKey(trigram)) {
-//					trigramId = trigramIdDict.get(trigram);
-//				} else {
-//					trigramIdDict.put(trigram, trigramId);
-//					trigramLookup.put(trigramId, trigram);
-//				}
-//				if (trigramDict.containsKey(trigramId)) {
-//					if(!trigramDict.get(trigramId).contains(termId)) {
-//						trigramDict.get(trigramId).add(termId);
-//					}
-//				} else {
-//					Set<Integer> newSet = new HashSet<Integer>();
-//					newSet.add(termId);
-//					trigramDict.put(trigramId, newSet);
-//				}
-//			}
-//		}
-//	}
-	
-//	public Map<Integer, Set<Integer>> getTrigramDict() {
-//		return trigramDict;
-//	}
-//	
-//	public Map<Integer, String> getTermLookup() {
-//		return termLookup;
-//	}
-//	
-//	public Map<String, Integer> getTermIdDict() {
-//		return termIdDict;
-//	}
-//	
-//	public Map<Integer, String> getTrigramLookup() {
-//		return trigramLookup;
-//	}
-//	
-//	public Map<String, Integer> getTrigramIdDict() {
-//		return trigramIdDict;
-//	}
-
 	
 	// This helper method gets the count of a given bigram in the corpus
 	private double countBigramDict(String first, String second) {

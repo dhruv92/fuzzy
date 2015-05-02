@@ -6,9 +6,6 @@ public class UniformCostModel implements EditCostModel {
 	
 	@Override
 	public double editProbability(Candidate candidate, String R) {
-		/*
-		 * Your code here - NOTE FROM DHRUV, added code
-		 */
 		if (candidate.getCandidate().equals(R)) return Math.log(EQUAL_PROBABILITY);
 		
 		return Math.log(Math.pow(EDIT_PROBABILITY, candidate.getDistance()));
