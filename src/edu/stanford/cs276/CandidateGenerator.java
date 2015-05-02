@@ -32,7 +32,7 @@ public class CandidateGenerator implements Serializable {
 		'a','b','c','d','e','f','g','h','i','j','k','l','m','n',
 		'o','p','q','r','s','t','u','v','w','x','y','z',
 		'0','1','2','3','4','5','6','7','8','9',
-		' ',','};
+		' ',',','\''};
 
 	// Given a word, goes through every trigram in the word
 	// For each trigram, looks up the word set for that trigram dictionary
