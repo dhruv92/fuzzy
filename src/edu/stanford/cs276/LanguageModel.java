@@ -50,7 +50,11 @@ public class LanguageModel implements Serializable {
 	// Output uni gram probability of a word based on the training corpus in log space. 
 	// Note this method converts to log space before outputting the probability
 	private double unigramProb(String word) {
+		System.out.println("          Unigram: " + word);
+		System.out.println("          UnigramFrac: " + unigram.count(word) + " / " + unigram.termCount());
+		
 		double result = Math.log(unigram.count(word)) - Math.log(unigram.termCount());
+		System.out.println("          UnigramProb: " + result);
 		return result;
 	}
 	
@@ -59,11 +63,16 @@ public class LanguageModel implements Serializable {
 	// Output the interpolated bigram probability of a pair of words
 	// Note this method converts to log space before outputting the probability
 	private double bigramProb(String first, String second) {
+		System.out.println("          Bigram: " + first + "," + second);
+		System.out.println("          BigramFrac: " + countBigramDict(first, second)+1 + " / " + unigram.count(first));
 		double bigramProb = Math.log(countBigramDict(first, second)) - Math.log(unigram.count(first));
+		System.out.println("          BigramProb: " + bigramProb);
 		return INTERPOLATION_LAMDA * unigramProb(second) + (1 - INTERPOLATION_LAMDA) * (bigramProb);
 	}
 	
 	Dictionary unigram = new Dictionary();
+	// vocab is only distinct terms, helpful for smoothing
+//	Set<String> vocab = new HashSet<String>();
 	
 	// Added a bigram dictionary to make bigram calculations easier
 	Map<Pair<String, String>, Integer> bigramDict = new HashMap<Pair<String, String>, Integer>();
@@ -117,10 +126,12 @@ public class LanguageModel implements Serializable {
 				StringTokenizer tokenizer = new StringTokenizer(line);
 				String lastWord = tokenizer.nextToken();
 				unigram.add(lastWord);
+//				vocab.add(lastWord);
 //				addToTrigramDict(lastWord);
 				while (tokenizer.hasMoreTokens()) {
 					String nextWord = tokenizer.nextToken();
 					unigram.add(nextWord);
+//					vocab.add(nextWord);
 //					addToTrigramDict(nextWord);
 					addToBigramDict(lastWord, nextWord);
 					lastWord = nextWord;
