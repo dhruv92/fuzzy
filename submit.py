@@ -1,4 +1,4 @@
-
+### The submission script for PA3 of CS276, 2015
 
 ### The only things you'll have to edit (unless you're porting this script over to a different language) 
 ### are at the bottom of this file.
@@ -12,10 +12,11 @@ import email.message
 import email.encoders
 import StringIO
 import sys
-#from subprocess import Popen
-#from subprocess import PIPE
+from subprocess import Popen
+from subprocess import PIPE
 import subprocess
 from time import time
+from tempfile import NamedTemporaryFile
 import os
 import glob
 import zipfile
@@ -47,20 +48,19 @@ def submit():
   # Part Identifier
   (partIdx, sid) = partPrompt()
 
+
   # Get Challenge
   (login, ch, state, ch_aux) = getChallenge(login, sid) #sid is the "part identifier"
+
   if((not login) or (not ch) or (not state)):
     # Some error occured, error string in first return element.
     print '\n!! Error: %s\n' % login
     return
 
   # Attempt Submission with Challenge
-  print 'before challengeResponse'
   ch_resp = challengeResponse(login, password, ch)
-  print 'before submitSolution'
-  (result, string) = submitSolution(login, ch_resp, sid, output(partIdx), \
+  (result, string) = submitSolution(login, ch_resp, sid, output(partIdx,ch_aux), \
                                   source(partIdx), state, ch_aux)
-  print 'Submitted'
 
   print '== %s' % string.strip()
 
@@ -82,6 +82,7 @@ def basicPrompt():
 def partPrompt():
   print 'Hello! These are the assignment parts that you can submit:'
   counter = 0
+  partFriendlyNames = validParts()
   for part in partFriendlyNames:
     counter += 1
     print str(counter) + ') ' + partFriendlyNames[counter - 1]
@@ -123,10 +124,6 @@ def submit_url():
 
 def submitSolution(email_address, ch_resp, sid, output, source, state, ch_aux):
   """Submits a solution to the server. Returns (result, string)."""
-  #source_64_msg = email.message.Message()
-  #source_64_msg.set_payload(source)
-  #email.encoders.encode_base64(source_64_msg)
-
   output_64_msg = email.message.Message()
   output_64_msg.set_payload(output)
   email.encoders.encode_base64(output_64_msg)
@@ -148,7 +145,7 @@ def submitSolution(email_address, ch_resp, sid, output, source, state, ch_aux):
 
 ## This collects the source code (just for logging purposes) 
 def source(partIdx):
-  if partIdx == 2:
+  if partIdx == 0:
       
       if not os.path.exists("report.pdf"):
           print "No report.pdf file found in the directory. Please make sure it exists (and make sure it's all lowercase letters)."
@@ -159,44 +156,40 @@ def source(partIdx):
   
   return ""
 
-
-
 ############ BEGIN ASSIGNMENT SPECIFIC CODE - YOU'LL HAVE TO EDIT THIS ##############
 
 # Make sure you change this string to the last segment of your class URL.
 # For example, if your URL is https://class.coursera.org/pgm-2012-001-staging, set it to "pgm-2012-001-staging".
 URL = 'cs276-003'
+linesOutput = 1482
 
 # the "Identifier" you used when creating the part
-partIds = ['pa2_task1','pa2_task2','pa2_task3', 'pa2_task4']          
+partIds = ['pa3_report','pa3_task1','pa3_task2','pa3_task3', 'pa3_task4']          
 # used to generate readable run-time information for students
-partFriendlyNames = ['Uniform Cost Edit Model', 'Empirical Cost Edit Model', 'Report', 'Extra Credit'] 
-# source files to collect (just for our records)
-#sourceFiles = ['sampleStudentAnswer.py', 'sampleStudentAnswer.py', 'sampleStudentAnswer.py']                           
+def validParts():
+  """Returns a list of valid part names."""
+  partNames = ['Report', \
+               'Task 1 (Cosine Similarity)', \
+               'Task 2 (BM-25)', \
+               'Task 3 (Smallest Window)', \
+               'Task 4 (Extra Credit)']
+  return partNames
     
 def ensure_dir(d):
     if not os.path.exists(d):
         os.makedirs(d)
         
-def getFiles(tempoutfile):
-    pathq = 'http://web.stanford.edu/class/cs276/t2easpt';
-    filenames = ['queries.txt']    
-
-    ensure_dir(tempoutfile+'/test');
-    
-    for filename in filenames:
-        remotefile = urlopen(pathq + "/" + filename)
-        localfile = open(tempoutfile+'/test/'+filename,'w')
-        localfile.write(remotefile.read())
-        localfile.close()
-        remotefile.close()
-  
-        
-def output(partIdx):
-
-  tempoutfile = tempfile.mkdtemp()
-  getFiles(tempoutfile)
+def output(partIdx,ch_aux):
+  print '== Running your code ...'
+  print '== Your code should output results (and nothing else) to stdout'
+  # tempoutfile = tempfile.mkdtemp()
+  # getFiles(tempoutfile)
   outputString = ''
+
+  tempoutfile = '.tmp' + str(random.randint(0,1<<20))
+  localfile = open(tempoutfile,'w')
+  localfile.write(ch_aux)
+  localfile.close()
   
   if not os.path.exists("people.txt"):
       print "There is no people.txt file in this directory. Please make people.txt file in this directory with your and your partner's SUNet ID in separate lines (do NOT include @stanford.edu)"
@@ -215,49 +208,76 @@ def output(partIdx):
   stats['USERIDS']= peopleStr  
   stats['TIMESUBMITTED'] = str(datetime.datetime.now());
   
+  elapsed= 0.0 
   if partIdx == 0:
-      print 'Running Uniform Edit Model (this might take a while)'
-      inp = raw_input('Do you want to run the buildmodels.sh step (yes|y)?: ')
-      inp = inp.strip().lower()
-      if inp == 'y' or inp == 'yes':
-          print 'Calling ./buildmodels.sh (this might take a while)'
-          retcode = subprocess.check_call(['./buildmodels.sh', 'data/corpus/', 'data/edit1s.txt'])
-      print 'Calling ./runcorrector.sh (this might take a while)'
-      start = time()
-      res = subprocess.check_output(['./runcorrector.sh', 'uniform', tempoutfile + '/test/queries.txt'])
-      stats['time'] = time() - start
-      stats['guess'] = res.splitlines()
-        
-  elif partIdx == 1:     
-    print 'Running Empirical Edit Cost Model (this might take a while)' 
-    inp = raw_input('Do you want to re-run the buildmodels.sh step (yes|y)?: ')
-    inp = inp.strip().lower()
-    if inp == 'y' or inp == 'yes':
-      print 'Calling ./buildmodels.sh (this might take a while)'
-      retcode = subprocess.check_call( ['./buildmodels.sh', 'data/corpus/', 'data/edit1s.txt'] )
-    print 'Calling ./runcorrector.sh (this might take a while)'
-    start = time()
-    res = subprocess.check_output(['./runcorrector.sh', 'empirical',  tempoutfile + '/test/queries.txt'])
-    stats['time'] = time() - start
-    stats['guess'] = res.splitlines()
-
-    
-  elif partIdx == 2:
     print 'Submitting the report'
-    #stats['report'] = open('report.pdf', 'rb').read()
 
-  elif partIdx == 3:     
-    print 'Running the Extra Credit Model (this might take a while)' 
-    inp = raw_input('Do you want to re-run the buildmodels.sh step (yes|y)?: ')
-    inp = inp.strip().lower()
-    if inp == 'y' or inp == 'yes':
-      print 'Calling ./buildmodels.sh (this might take a while)'
-      retcode = subprocess.check_call( ['./buildmodels.sh', 'data/corpus/', 'data/edit1s.txt', 'extra'] )
-    print 'Calling ./runcorrector.sh (this might take a while)'
+  elif partIdx == 1:
+    print '== Calling ./rank.sh for Task 1 (this might take a while)'
     start = time()
-    res = subprocess.check_output(['./runcorrector.sh', tempoutfile + '/test/queries.txt', 'extra'])
-    stats['time'] = time() - start
-    stats['guess'] = res.splitlines()
+    child = Popen(['./rank.sh', tempoutfile,'cosine'], stdout=PIPE, stderr=PIPE, shell=False)
+    (res, err) = child.communicate("")
+    elapsed = time() - start
+    guesses = res.splitlines()
+    print '== Your stdout output is:'
+    print res
+    print '== Your stderr output is:'
+    print err
+    if (len(guesses) != linesOutput):
+        print '== Warning. The number of url-document pairs ' + str(len(guesses)) + ' is not correct. Please ensure that the output is formatted properly.'
+    stats['result'] = res
+
+  elif partIdx == 2:
+      print '== Calling ./rank.sh for Task 2 (this might take a while)'
+      start = time()
+      child = Popen(['./rank.sh', tempoutfile,'bm25'], stdout=PIPE, stderr=PIPE, shell=False)
+      (res, err) = child.communicate("")
+      elapsed = time() - start
+      guesses = res.splitlines()
+      print '== Your stdout output is:'
+      print res
+      print '== Your stderr output is:'
+      print err
+      if (len(guesses) != linesOutput):
+          print '== Warning. The number of url-document pairs is not correct. Please ensure that the output is formatted properly.'
+      stats['result'] = res
+
+  elif partIdx == 3:
+      print '== Calling ./rank.sh for Task 3 (this might take a while)'
+      start = time()
+      child = Popen(['./rank.sh',tempoutfile,'window'], stdout=PIPE, stderr=PIPE, shell=False)
+      (res, err) = child.communicate("")
+      elapsed = time() - start
+      guesses = res.splitlines()
+      print '== Your stdout output is:'
+      print res
+      print '== Your stderr output is:'
+      print err
+      if (len(guesses) != linesOutput):
+          print '== Warning. The number of url-document pairs is not correct. Please ensure that the output is formatted properly.'
+      stats['result'] = res
+
+  elif partIdx == 4:
+      print '== Calling ./rank.sh for Task 4 (this might take a while)'
+      start = time()
+      child = Popen(['./rank.sh', tempoutfile,'extra'], stdout=PIPE, stderr=PIPE, shell=False)
+      (res, err) = child.communicate("")
+      elapsed = time() - start
+      guesses = res.splitlines()
+      print '== Your stdout output is:'
+      print res
+      print '== Your stderr output is:'
+      print err
+      if (len(guesses) != linesOutput):
+          print '== Warning. The number of url-document pairs is not correct. Please ensure that the output is formatted properly.'
+      stats['result'] = res
+      
+  else:
+    print '[WARNING]\t[output]\tunknown partId: %s' % partIdx
+    sys.exit(1)
+
+  print '== Finished running your code'
+  os.remove(tempoutfile)
 
   return json.dumps(stats).strip()
 

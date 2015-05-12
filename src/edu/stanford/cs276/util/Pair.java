@@ -1,60 +1,65 @@
 package edu.stanford.cs276.util;
 
-import java.io.Serializable;
 
-public class Pair<A, B> implements Serializable{
-    private A first;
-    private B second;
+/**
+ * A generic-typed pair of objects.
+ * 
+ * @author Dan Klein
+ */
+public class Pair<F, S> {
+	private F first;
+	private S second;
 
-    public Pair(A first, B second) {
-    	super();
-    	this.first = first;
-    	this.second = second;
-    }
+	public F getFirst() {
+		return first;
+	}
 
-    @Override
+	public S getSecond() {
+		return second;
+	}
+
+	public void setFirst(F val) {
+		this.first = val;
+	}
+
+	public void setSecond(S val) {
+		this.second = val;
+	}
+
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof Pair))
+			return false;
+
+		@SuppressWarnings("unchecked")
+		final Pair<F, S> pair = (Pair<F, S>) o;
+
+		if (first != null ? !first.equals(pair.first) : pair.first != null)
+			return false;
+		if (second != null ? !second.equals(pair.second) : pair.second != null)
+			return false;
+
+		return true;
+	}
+
 	public int hashCode() {
-    	int hashFirst = first != null ? first.hashCode() : 0;
-    	int hashSecond = second != null ? second.hashCode() : 0;
+		int result;
+		result = (first != null ? first.hashCode() : 0);
+		result = 29 * result + (second != null ? second.hashCode() : 0);
+		return result;
+	}
 
-    	return (hashFirst + hashSecond) * hashSecond + hashFirst;
-    }
+	public String toString() {
+		return "(" + getFirst() + ", " + getSecond() + ")";
+	}
 
-    @Override
-	public boolean equals(Object other) {
-    	if (other instanceof Pair) {
-    		Pair otherPair = (Pair) other;
-    		return 
-    		((  this.first == otherPair.first ||
-    			( this.first != null && otherPair.first != null &&
-    			  this.first.equals(otherPair.first))) &&
-    		 (	this.second == otherPair.second ||
-    			( this.second != null && otherPair.second != null &&
-    			  this.second.equals(otherPair.second))) );
-    	}
+	public Pair(F first, S second) {
+		this.first = first;
+		this.second = second;
+	}
 
-    	return false;
-    }
-
-    @Override
-	public String toString()
-    { 
-           return "(" + first + ", " + second + ")"; 
-    }
-
-    public A getFirst() {
-    	return first;
-    }
-
-    public void setFirst(A first) {
-    	this.first = first;
-    }
-
-    public B getSecond() {
-    	return second;
-    }
-
-    public void setSecond(B second) {
-    	this.second = second;
-    }
+	public static <E, F> Pair<E, F> make(E car, F cdr) {
+		return new Pair<E, F>(car, cdr);
+	}
 }
