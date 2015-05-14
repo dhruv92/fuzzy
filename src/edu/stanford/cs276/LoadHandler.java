@@ -117,7 +117,6 @@ public class LoadHandler {
 	// Build document frequencies and then serializes to file
 	public static Map<String,Double> buildDFs(String dataDir, String idfFile) throws IOException
 	{
-	
 		
 		// Get root directory
 		String root = dataDir;
@@ -127,7 +126,6 @@ public class LoadHandler {
 			return null;
 		}
 		
-		//String output = "output";
 		
 		File[] dirlist = rootdir.listFiles();
 
@@ -140,6 +138,10 @@ public class LoadHandler {
 		for (File block : dirlist) {
 
 			File blockDir = new File(root, block.getName());
+			if (!blockDir.exists() || !blockDir.isDirectory()) {
+				continue;
+			}
+			
 			File[] filelist = blockDir.listFiles();
 			
 			/* For each file */
@@ -148,7 +150,7 @@ public class LoadHandler {
 				
 				// Keep track of which terms we've seen in a doc
 				// so that we don't count it twice
-				ArrayList<String> termsSeenInDoc = new ArrayList<String>();
+				Set<String> termsSeenInDoc = new HashSet<String>();
 
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line;
@@ -160,7 +162,7 @@ public class LoadHandler {
 						// If the term is in the DF dict
 						if (termDocCount.keySet().contains(term)) {
 							// If term hasn't been seen in this doc
-							// increment its doc count and add it to the seen list
+							// increment its doc count and add it to the 'seen' set
 							if (!termsSeenInDoc.contains(term)) {
 								termDocCount.put(term, termDocCount.get(term) + 1);
 								termsSeenInDoc.add(term);
