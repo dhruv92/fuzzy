@@ -79,6 +79,7 @@ public class CosineSimilarityScorer extends AScorer {
 			} else {
 				idf = idfs.get(term);
 			}
+			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
 		}
 		
 		//do dot product of query vector & document vector to get score
