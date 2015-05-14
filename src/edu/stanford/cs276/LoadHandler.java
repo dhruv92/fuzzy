@@ -184,6 +184,9 @@ public class LoadHandler {
 			termDocCount.put(term, idf);
 		}
 		
+		// This value will be saved as a constant, then this will be commented out
+		// System.out.println("Total Docs: " + totalDocCount);
+		
 		
 		// Save to file
 		try {
