@@ -126,9 +126,13 @@ public class Rank {
 			System.err.println("Insufficient number of arguments: <queryDocTrainData path> taskType");
 		}
 		
+		
 		// To store the idfs for different words in the collection
-//		Map<String,Double> idfs = LoadHandler.buildDFs("/Users/james/Documents/workspace/cs276-pa1/data", "idfFile");
-		Map<String,Double> idfs = LoadHandler.loadDFs("/Users/james/Documents/workspace/fuzzy/idfFile");
+		// RUN THIS FIRST TIME, THEN COMMENT OUT
+		Map<String,Double> idfs = LoadHandler.buildDFs("/Users/james/Documents/workspace/cs276-pa1/data", "idfFile");
+		
+		// RUN THIS EVERY OTHER TIME
+		//Map<String,Double> idfs = LoadHandler.loadDFs("/Users/james/Documents/workspace/fuzzy/idfFile");
 
 		String scoreType = args[1];
 		
