@@ -77,8 +77,8 @@ public class CosineSimilarityScorer extends AScorer {
 		for (String term : tfQuery.keySet()) {
 			double idf;
 			if (!idfs.containsKey(term)) {
-				//TODO get the total document count from data
-				idf = Math.log(totalDocCount + 1); 
+				// Get the total document count from data
+				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
 			} else {
 				idf = idfs.get(term);
 			}
