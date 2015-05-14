@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * An abstract class for a scorer. Need to be extended by each specific implementation of scorers.
@@ -86,14 +87,53 @@ public abstract class AScorer {
 			/*
 			 * @//TODO : Your code here
 			 */
+			
+			//thing to watch out for: lower casing between doc & query, duplicate words in query
 			increaseBodyTF(queryWord, tfs.get("body"), d);
+			increaseURLTF(queryWord, tfs.get("url"), d);
+			increaseHeaderTF(queryWord, tfs.get("header"), d);
+			increaseTitleTF(queryWord, tfs.get("title"), d);
+			increaseAnchorTF(queryWord, tfs.get("anchor"), d);
 		}
 		
 		return tfs;
 	}
 	
+	private void increaseHeaderTF(String queryWord, Map<String, Double> headerTF, Document d) {
+		headerTF.put(queryWord, 0.0);
+		for (String header : d.headers) {
+			if (header.toLowerCase().contains(queryWord)) {
+				headerTF.put(queryWord, headerTF.get(queryWord) + 1);
+			}
+		}
+	}
+	
+	private void increaseTitleTF(String queryWord, Map<String, Double> titleTF, Document d) {
+		titleTF.put(queryWord, 0.0);
+		StringTokenizer tokenizer = new StringTokenizer(d.title);
+		while (tokenizer.hasMoreTokens()) {
+			String word = tokenizer.nextToken().toLowerCase();
+			if (queryWord.equals(word)) {
+				titleTF.put(queryWord, titleTF.get(queryWord) + 1);
+			}
+		}
+	}
+	
+	private void increaseAnchorTF(String queryWord, Map<String, Double> anchorTF, Document d) {
+		anchorTF.put(queryWord, 0.0);
+		if (d.anchors.containsKey(queryWord)) {
+			anchorTF.put(queryWord, (double) d.anchors.get(queryWord));
+		}
+	}
+	
 	private void increaseURLTF(String queryWord, Map<String, Double> urlTF, Document d) {
-		Map<tring,>
+		String[] tokens = d.url.toLowerCase().split("\\P{Alpha}+");
+		urlTF.put(queryWord, 0.0);
+		for (String t : tokens) {
+			if (queryWord.equals(t)) {
+				urlTF.put(queryWord, urlTF.get(queryWord) + 1);
+			}
+		}
 	}
 	
 	private void increaseBodyTF(String queryWord, Map<String, Double> bodyTF, Document d)  {
