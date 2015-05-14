@@ -3,6 +3,7 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,15 +13,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+
+//import cs276.assignments.PostingList;
 
 /**
  * This class is used to 1) load training data from files; 2) build idf from data collections in PA1.
  */
 public class LoadHandler {
-	
+
 	public static Map<Query,Map<String, Document>> loadTrainData(String feature_file_name) throws Exception {
 		File feature_file = new File(feature_file_name);
 		if (!feature_file.exists() ) {
@@ -110,8 +115,9 @@ public class LoadHandler {
 	}
 	
 	// Build document frequencies and then serializes to file
-	public static Map<String,Double> buildDFs(String dataDir, String idfFile)
+	public static Map<String,Double> buildDFs(String dataDir, String idfFile) throws IOException
 	{
+	
 		
 		// Get root directory
 		String root = dataDir;
@@ -121,6 +127,8 @@ public class LoadHandler {
 			return null;
 		}
 		
+		//String output = "output";
+		
 		File[] dirlist = rootdir.listFiles();
 
 		int totalDocCount = 0;
@@ -128,17 +136,50 @@ public class LoadHandler {
 		// Count number of documents in which each term appears
 		Map<String,Double> termDocCount = new HashMap<String,Double>();
 		
-		/*
-		 * @//TODO : Your code here -- consult PA1 (will be a simplified version)
-		 */
-		
-		System.out.println(totalDocCount);
+		/* For each block */
+		for (File block : dirlist) {
+
+			File blockDir = new File(root, block.getName());
+			File[] filelist = blockDir.listFiles();
+			
+			/* For each file */
+			for (File file : filelist) {
+				++totalDocCount;
+				
+				// Keep track of which terms we've seen in a doc
+				// so that we don't count it twice
+				ArrayList<String> termsSeenInDoc = new ArrayList<String>();
+
+				BufferedReader reader = new BufferedReader(new FileReader(file));
+				String line;
+				while ((line = reader.readLine()) != null) {
+					String[] tokens = line.trim().split("\\s+");
+					// For each term in the doc
+					for (String term : tokens) {
+						
+						// If the term is in the DF dict
+						if (termDocCount.keySet().contains(term)) {
+							// If term hasn't been seen in this doc
+							// increment its doc count and add it to the seen list
+							if (!termsSeenInDoc.contains(term)) {
+								termDocCount.put(term, termDocCount.get(term) + 1);
+								termsSeenInDoc.add(term);
+							}
+						} else {
+							// If the word is new to the DF dict, add it
+							termDocCount.put(term, 1.0);
+							termsSeenInDoc.add(term);
+						}
+					} // term loop
+				} // line loop
+			} // doc (file) loop
+		} // block loop
+						
 		
 		// Make idf using df
 		for (String term : termDocCount.keySet()) {
-			/*
-			 * @//TODO : Your code here
-			 */
+			double idf = Math.log((float)totalDocCount / termDocCount.get(term));
+			termDocCount.put(term, idf);
 		}
 		
 		
