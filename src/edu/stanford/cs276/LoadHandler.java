@@ -41,6 +41,7 @@ public class LoadHandler {
 		Map<Query,Map<String, Document>> queryDict =  new HashMap<Query,Map<String, Document>>();
 		
 		while ((line = reader.readLine()) != null) {
+			line = line.toLowerCase();
 			String[] tokens = line.split(":", 2);
 			String key = tokens[0].trim();
 			String value = tokens[1].trim();
@@ -155,6 +156,7 @@ public class LoadHandler {
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line;
 				while ((line = reader.readLine()) != null) {
+					line = line.toLowerCase();
 					String[] tokens = line.trim().split("\\s+");
 					// For each term in the doc
 					for (String term : tokens) {

@@ -19,6 +19,9 @@ import java.util.Set;
  * Skeleton code for the implementation of a Cosine Similarity Scorer in Task 1.
  */
 public class CosineSimilarityScorer extends AScorer {
+	
+	// For smoothing
+	private final static int TOTAL_CORPUS_DOCS = 98999;
 
 	public CosineSimilarityScorer(Map<String,Double> idfs) {
 		super(idfs);

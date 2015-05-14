@@ -15,9 +15,6 @@ import edu.stanford.cs276.util.Pair;
  */
 public class Rank {
 	
-	// For smoothing in the various scoring methods
-	public final static int TOTAL_CORPUS_DOCS = 98999;
-	
 	/**
 	 * Call this function to score and rank documents for some queries, using a specified scoring function.
 	 */
