@@ -129,6 +129,7 @@ public class Rank {
 		
 		// To store the idfs for different words in the collection
 		// RUN THIS FIRST TIME, THEN COMMENT OUT
+		// Use your path to your PA1 data folder
 		Map<String,Double> idfs = LoadHandler.buildDFs("/Users/james/Documents/workspace/cs276-pa1/data", "idfFile");
 		
 		// RUN THIS EVERY OTHER TIME
