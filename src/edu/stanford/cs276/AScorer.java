@@ -29,8 +29,26 @@ public abstract class AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
+		for (String w : q.queryWords) {
+			if (tfQuery.containsKey(w)) {
+				tfQuery.put(w, tfQuery.get(w) + 1);
+			} else {
+				tfQuery.put(w, (double) 1);
+			}
+		}
+		
+		// sublinear scaling -- not necessary but should play with
+		//for (String k : tfQuery.keySet()) {
+		//	tfQuery.put(k, subLinearScale(tfQuery.get(k)));
+		//}
 		
 		return tfQuery;
+	}
+	
+	private double subLinearScale(double rawScore) {
+		if (rawScore <= 0) return 0;
+		
+		return 1 + Math.log(rawScore);
 	}
 	
 	
@@ -56,6 +74,10 @@ public abstract class AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
+		for (String type : TFTYPES) {
+			Map<String, Double> tf = new HashMap<String, Double>();
+			tfs.put(type,tf);
+		}
 		
 	    ////////////////////////////////////////////////////////
 		
@@ -64,9 +86,24 @@ public abstract class AScorer {
 			/*
 			 * @//TODO : Your code here
 			 */
-			
+			increaseBodyTF(queryWord, tfs.get("body"), d);
 		}
+		
 		return tfs;
+	}
+	
+	private void increaseURLTF(String queryWord, Map<String, Double> urlTF, Document d) {
+		Map<tring,>
+	}
+	
+	private void increaseBodyTF(String queryWord, Map<String, Double> bodyTF, Document d)  {
+		Map<String, List<Integer>> termPos = d.body_hits;
+		List<Integer> positions = termPos.get(queryWord);
+		if (positions == null) {
+			bodyTF.put(queryWord, 0.0);
+		} else {
+			bodyTF.put(queryWord, (double) positions.size());
+		}
 	}
 
 }
