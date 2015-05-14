@@ -178,9 +178,9 @@ public class LoadHandler {
 		} // block loop
 						
 		
-		// Make idf using df
+		// Make idf using df //COMMENT BY DHRUV: Added smoothing
 		for (String term : termDocCount.keySet()) {
-			double idf = Math.log((float)totalDocCount / termDocCount.get(term));
+			double idf = Math.log(((float)totalDocCount +1)/ (termDocCount.get(term) +1));
 			termDocCount.put(term, idf);
 		}
 		
