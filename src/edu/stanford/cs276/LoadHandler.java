@@ -176,6 +176,7 @@ public class LoadHandler {
 						}
 					} // term loop
 				} // line loop
+				reader.close();
 			} // doc (file) loop
 		} // block loop
 						

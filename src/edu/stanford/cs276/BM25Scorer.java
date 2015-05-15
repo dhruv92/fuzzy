@@ -50,11 +50,11 @@ public class BM25Scorer extends AScorer {
 		lengths = new HashMap<Document,Map<String,Double>>();
 		avgLengths = new HashMap<String,Double>();
 		pagerankScores = new HashMap<Document,Double>();
-		
+
 		/*
 		 * @//TODO : Your code here
 		 */
-		
+
 		//normalize avgLengths
 		for (String tfType : this.TFTYPES) {
 			/*
@@ -69,32 +69,61 @@ public class BM25Scorer extends AScorer {
 
 	public double getNetScore(Map<String,Map<String, Double>> tfs, Query q, Map<String,Double> tfQuery,Document d) {
 		double score = 0.0;
-		
+
 		/*
 		 * @//TODO : Your code here
 		 */
-		
+		Map<String, Double> documentVector = new HashMap<String, Double>();
+		for (String term : tfQuery.keySet()) {
+			double termScore = 0.0;
+			documentVector.put(term, termScore);
+			for (String type : this.TFTYPES) {
+				Map<String, Double> termFreq = tfs.get(type);
+				double weight = 1.0;
+				switch(type) {
+				case "url":
+					weight = urlweight;
+					break;
+				case "title":
+					weight = titleweight;
+					break;
+				case "body":
+					weight = bodyweight;
+					break;
+				case "anchor":
+					weight = anchorweight;
+					break;
+				case "header":
+					weight = headerweight;
+					break;
+				}
+				//TODO decide if we should do sublinear scaling on document term frequencies
+				termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
+			}
+		}
 		return score;
 	}
+
 
 	//do bm25 normalization
 	public void normalizeTFs(Map<String,Map<String, Double>> tfs,Document d, Query q) {
 		/*
 		 * @//TODO : Your code here
 		 */
+
 	}
 
 
 	@Override
 	public double getSimScore(Document d, Query q) {
-		
+
 		Map<String,Map<String, Double>> tfs = this.getDocTermFreqs(d,q);
-		
+
 		this.normalizeTFs(tfs, d, q);
-		
+
 		Map<String,Double> tfQuery = getQueryFreqs(q);
 
-	    return getNetScore(tfs,q,tfQuery,d);
+		return getNetScore(tfs,q,tfQuery,d);
 	}
-	
+
 }

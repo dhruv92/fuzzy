@@ -156,10 +156,10 @@ public class Rank {
 		Map<Query,List<String>> queryRankings = score(queryDict, scoreType, idfs);
 		
 		// Print results and save them to file (This is not necessary)
-		/*
-		  String outputFilePath =  null;
+		
+		  String outputFilePath =  "ranked.txt";
 		  writeRankedResultsToFile(queryRankings,outputFilePath);
-		 */
+		 
 		
 		// Print results
 		printRankedResults(queryRankings);
