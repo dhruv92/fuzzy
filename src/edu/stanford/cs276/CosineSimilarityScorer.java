@@ -71,6 +71,7 @@ public class CosineSimilarityScorer extends AScorer {
 				//TODO decide if we should do sublinear scaling on document term frequencies
 				termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
 			}
+			documentVector.put(term, termScore);
 		}
 		
 		//normalize the query vector by the idfs. For each term, come up with IDF & multiply against TF

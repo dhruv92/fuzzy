@@ -99,7 +99,8 @@ public class BM25Scorer extends AScorer {
 				}
 				//TODO decide if we should do sublinear scaling on document term frequencies
 				termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
-			}
+			} //type loop
+			documentVector.put(term, termScore);
 		}
 		return score;
 	}
