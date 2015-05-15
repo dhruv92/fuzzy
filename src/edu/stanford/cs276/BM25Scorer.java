@@ -16,6 +16,8 @@ public class BM25Scorer extends AScorer {
 		this.queryDict = queryDict;
 		this.calcAverageLengths();
 	}
+	
+	private final static int TOTAL_CORPUS_DOCS = 98999;
 
 
 	/////////////// Weights /////////////////
@@ -54,12 +56,69 @@ public class BM25Scorer extends AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
+		
+		//TODO : Figure out if we want zone weighted lengths (like in lecture)
+		for (Query query : queryDict.keySet()) {
+			Map<String, Document> retrievedDocs = queryDict.get(query);
+			for (String url : retrievedDocs.keySet()) {
+				Document d = retrievedDocs.get(url);
+				Map<String,Double> dLengths = new HashMap<String,Double>();
+				double dl = 0.0;
+				for (String type : this.TFTYPES) {
+					double weight = 1.0;
+					double length = 0.0;
+					switch(type) {
+					case "url":
+						//weight = urlweight;
+						length = 1.0;
+						break;
+					case "title":
+						//weight = titleweight;
+						length = d.title.split(" ").length;
+						break;
+					case "body":
+						//weight = bodyweight;
+						length = d.body_length;
+						break;
+					case "anchor":
+						//weight = anchorweight;
+						double anchor_counts = 0.0;
+						for (String anchor : d.anchors.keySet()) {
+							anchor_counts += d.anchors.get(anchor);
+						}
+						length = anchor_counts;
+						break;
+					case "header":
+						//weight = headerweight;
+						length = d.headers.size();
+						break;
+					}
+					if (avgLengths.containsKey(type)) {
+						avgLengths.put(type, avgLengths.get(type) + length/TOTAL_CORPUS_DOCS);
+					} else {
+						avgLengths.put(type, length/TOTAL_CORPUS_DOCS);
+					}
+					dLengths.put(type, length);
+					dl += length; // * weight;
+				} // type loop
+				lengths.put(d, dLengths);
+				pagerankScores.put(d, (double)d.page_rank);
+			} // url (doc) loop
+		} // query loop
 
 		//normalize avgLengths
+		//TODO : figure out if we want this kind of normalization
 		for (String tfType : this.TFTYPES) {
 			/*
 			 * @//TODO : Your code here
 			 */
+			double vecLength = 	Math.sqrt(Math.pow(avgLengths.get("url"), 2) +
+					Math.pow(avgLengths.get("title"), 2) +
+					Math.pow(avgLengths.get("body"), 2) +
+					Math.pow(avgLengths.get("anchor"), 2) +
+					Math.pow(avgLengths.get("header"), 2));
+			avgLengths.put(tfType, avgLengths.get(tfType) / vecLength);
+			
 		}
 
 	}
@@ -101,6 +160,19 @@ public class BM25Scorer extends AScorer {
 				termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
 			} //type loop
 			documentVector.put(term, termScore);
+		} //term loop
+		
+		for (String term : tfQuery.keySet()) {
+			double idf;
+			if (!idfs.containsKey(term)) {
+				// Get the total document count from data
+				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
+			} else {
+				idf = idfs.get(term);
+			}
+			//TODO figure out what vj function is
+			double vj = 0.0;
+			score += (documentVector.get(term) * idf) / (k1 + documentVector.get(term)) + pageRankLambda*vj;
 		}
 		return score;
 	}
@@ -111,7 +183,36 @@ public class BM25Scorer extends AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
-
+		for (String type: tfs.keySet()) {
+			Map<String, Double> termFreq = tfs.get(type);
+			double bweight = 1.0;
+			switch(type) {
+			case "url":
+				bweight = burl;
+				break;
+			case "title":
+				bweight = btitle;
+				break;
+			case "body":
+				bweight = bbody;
+				break;
+			case "anchor":
+				bweight = banchor;
+				break;
+			case "header":
+				bweight = bheader;
+				break;
+			}
+			double avlen = avgLengths.get(type);
+			for (String k : termFreq.keySet()) {
+				double tf = termFreq.get(k);
+				double len = lengths.get(d).get(type);
+				double normalizedTF = tf / (1 + bweight*(len/avlen - 1));
+				termFreq.put(k, normalizedTF);
+			} // term loop
+			tfs.put(type, termFreq);
+		} // type loop
+		
 	}
 
 
