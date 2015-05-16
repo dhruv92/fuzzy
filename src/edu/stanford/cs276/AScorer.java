@@ -38,18 +38,9 @@ public abstract class AScorer {
 			}
 		}
 		
-		// sublinear scaling -- not necessary but should play with
-		//for (String k : tfQuery.keySet()) {
-		//	tfQuery.put(k, subLinearScale(tfQuery.get(k)));
-		//}
+		
 		
 		return tfQuery;
-	}
-	
-	private double subLinearScale(double rawScore) {
-		if (rawScore <= 0) return 0;
-		
-		return 1 + Math.log(rawScore);
 	}
 	
 	

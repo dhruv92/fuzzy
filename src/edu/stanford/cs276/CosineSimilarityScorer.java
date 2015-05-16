@@ -43,6 +43,32 @@ public class CosineSimilarityScorer extends AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
+		Map<String, Double> documentVector = getDocumentVector(tfQuery, tfs);
+		
+		//normalize the query vector by the idfs. For each term, come up with IDF & multiply against TF
+		for (String term : tfQuery.keySet()) {
+			double idf;
+			if (!idfs.containsKey(term)) {
+				// Get the total document count from data
+				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
+			} else {
+				idf = idfs.get(term);
+			}
+			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
+		}
+		
+		//do dot product of query vector & document vector to get score
+		for (String term : tfQuery.keySet()) {
+			//TODO decide if we should do sublinear scaling on query term frequencies
+			double queryFreq = tfQuery.get(term); //subLinearScale(tfQuery.get(term)
+			double docFreq = documentVector.get(term);
+			score += queryFreq * docFreq;
+		}
+		
+		return score;
+	}
+	
+	public Map<String, Double> getDocumentVector(Map<String, Double> tfQuery, Map<String, Map<String, Double>> tfs) {
 		//combine the various term frequencies into one document vector
 		Map<String, Double> documentVector = new HashMap<String, Double>();
 		for (String term : tfQuery.keySet()) {
@@ -73,28 +99,7 @@ public class CosineSimilarityScorer extends AScorer {
 			}
 			documentVector.put(term, termScore);
 		}
-		
-		//normalize the query vector by the idfs. For each term, come up with IDF & multiply against TF
-		for (String term : tfQuery.keySet()) {
-			double idf;
-			if (!idfs.containsKey(term)) {
-				// Get the total document count from data
-				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
-			} else {
-				idf = idfs.get(term);
-			}
-			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
-		}
-		
-		//do dot product of query vector & document vector to get score
-		for (String term : tfQuery.keySet()) {
-			//TODO decide if we should do sublinear scaling on query term frequencies
-			double queryFreq = tfQuery.get(term); //subLinearScale(tfQuery.get(term)
-			double docFreq = documentVector.get(term);
-			score += queryFreq * docFreq;
-		}
-		
-		return score;
+		return documentVector;
 	}
 	
 	private double subLinearScale(double rawScore) {
