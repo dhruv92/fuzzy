@@ -45,17 +45,7 @@ public class CosineSimilarityScorer extends AScorer {
 		 */
 		Map<String, Double> documentVector = getDocumentVector(tfQuery, tfs);
 		
-		//normalize the query vector by the idfs. For each term, come up with IDF & multiply against TF
-		for (String term : tfQuery.keySet()) {
-			double idf;
-			if (!idfs.containsKey(term)) {
-				// Get the total document count from data
-				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
-			} else {
-				idf = idfs.get(term);
-			}
-			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
-		}
+		normalizeQFs(tfQuery);
 		
 		//do dot product of query vector & document vector to get score
 		for (String term : tfQuery.keySet()) {
@@ -107,6 +97,22 @@ public class CosineSimilarityScorer extends AScorer {
 		
 		return 1 + Math.log(rawScore);
 	}
+	
+	//Normalize the query frequencies using IDF
+	public void normalizeQFs(Map<String, Double> tfQuery) {
+		//For each term, come up with IDF & multiply against TF
+		for (String term : tfQuery.keySet()) {
+			double idf;
+			if (!idfs.containsKey(term)) {
+				// Get the total document count from data
+				idf = Math.log(TOTAL_CORPUS_DOCS + 1); 
+			} else {
+				idf = idfs.get(term);
+			}
+			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
+		}
+	}
+	
 	
 	// Normalize the term frequencies. Note that we should give uniform normalization to all fields as discussed
 	// in the assignment handout.
