@@ -13,19 +13,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-
-//import cs276.assignments.PostingList;
 
 /**
  * This class is used to 1) load training data from files; 2) build idf from data collections in PA1.
  */
 public class LoadHandler {
-
+	
 	public static Map<Query,Map<String, Document>> loadTrainData(String feature_file_name) throws Exception {
 		File feature_file = new File(feature_file_name);
 		if (!feature_file.exists() ) {
@@ -41,7 +37,6 @@ public class LoadHandler {
 		Map<Query,Map<String, Document>> queryDict =  new HashMap<Query,Map<String, Document>>();
 		
 		while ((line = reader.readLine()) != null) {
-			line = line.toLowerCase();
 			String[] tokens = line.split(":", 2);
 			String key = tokens[0].trim();
 			String value = tokens[1].trim();
@@ -119,6 +114,7 @@ public class LoadHandler {
 	public static Map<String,Double> buildDFs(String dataDir, String idfFile) throws IOException
 	{
 		
+
 		// Get root directory
 		String root = dataDir;
 		File rootdir = new File(root);

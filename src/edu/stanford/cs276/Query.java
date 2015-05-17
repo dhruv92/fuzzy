@@ -12,17 +12,7 @@ public class Query {
 	List<String> queryWords;
 	
 	public Query(String query) {
-		queryWords = new ArrayList<String>();
-		ArrayList<String> queryWordsInput = new ArrayList<String>(Arrays.asList(query.split(" ")));
-		
-		// force lowercase
-		for (String word : queryWordsInput) {
-			// force no duplicates
-			word = word.toLowerCase();
-			if(!queryWords.contains(word)) {
-				queryWords.add(word);
-			}
-		}
+		queryWords = new ArrayList<String>(Arrays.asList(query.split(" ")));
 		
 		
 	}
