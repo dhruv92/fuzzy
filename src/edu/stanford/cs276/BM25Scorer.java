@@ -16,7 +16,7 @@ public class BM25Scorer extends AScorer {
 		this.queryDict = queryDict;
 		this.calcAverageLengths();
 	}
-	
+
 	private final static int TOTAL_CORPUS_DOCS = 98999;
 
 
@@ -56,7 +56,7 @@ public class BM25Scorer extends AScorer {
 		/*
 		 * @//TODO : Your code here
 		 */
-		
+
 		//TODO : Figure out if we want zone weighted lengths (like in lecture)
 		for (Query query : queryDict.keySet()) {
 			Map<String, Document> retrievedDocs = queryDict.get(query);
@@ -83,14 +83,20 @@ public class BM25Scorer extends AScorer {
 					case "anchor":
 						//weight = anchorweight;
 						double anchor_counts = 0.0;
-						for (String anchor : d.anchors.keySet()) {
-							anchor_counts += d.anchors.get(anchor);
+						if(d.anchors != null) {
+							for (String anchor : d.anchors.keySet()) {
+								anchor_counts += d.anchors.get(anchor);
+							}
 						}
 						length = anchor_counts;
 						break;
 					case "header":
 						//weight = headerweight;
-						length = d.headers.size();
+						if (d.headers != null) {
+							length = d.headers.size();
+						} else {
+							length = 0.0;
+						}
 						break;
 					}
 					if (avgLengths.containsKey(type)) {
@@ -118,7 +124,7 @@ public class BM25Scorer extends AScorer {
 					Math.pow(avgLengths.get("anchor"), 2) +
 					Math.pow(avgLengths.get("header"), 2));
 			avgLengths.put(tfType, avgLengths.get(tfType) / vecLength);
-			
+
 		}
 
 	}
@@ -161,7 +167,7 @@ public class BM25Scorer extends AScorer {
 			} //type loop
 			documentVector.put(term, termScore);
 		} //term loop
-		
+
 		for (String term : tfQuery.keySet()) {
 			double idf;
 			if (!idfs.containsKey(term)) {
@@ -212,7 +218,7 @@ public class BM25Scorer extends AScorer {
 			} // term loop
 			tfs.put(type, termFreq);
 		} // type loop
-		
+
 	}
 
 

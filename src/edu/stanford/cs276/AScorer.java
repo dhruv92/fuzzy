@@ -92,9 +92,11 @@ public abstract class AScorer {
 	
 	private void increaseHeaderTF(String queryWord, Map<String, Double> headerTF, Document d) {
 		headerTF.put(queryWord, 0.0);
-		for (String header : d.headers) {
-			if (header.toLowerCase().contains(queryWord)) {
-				headerTF.put(queryWord, headerTF.get(queryWord) + 1);
+		if(d.headers != null) {
+			for (String header : d.headers) {
+				if (header.toLowerCase().contains(queryWord)) {
+					headerTF.put(queryWord, headerTF.get(queryWord) + 1);
+				}
 			}
 		}
 	}
@@ -112,8 +114,10 @@ public abstract class AScorer {
 	
 	private void increaseAnchorTF(String queryWord, Map<String, Double> anchorTF, Document d) {
 		anchorTF.put(queryWord, 0.0);
-		if (d.anchors.containsKey(queryWord)) {
-			anchorTF.put(queryWord, (double) d.anchors.get(queryWord));
+		if(d.anchors != null) {
+			if (d.anchors.containsKey(queryWord)) {
+				anchorTF.put(queryWord, (double) d.anchors.get(queryWord));
+			}
 		}
 	}
 	
@@ -128,12 +132,14 @@ public abstract class AScorer {
 	}
 	
 	private void increaseBodyTF(String queryWord, Map<String, Double> bodyTF, Document d)  {
-		Map<String, List<Integer>> termPos = d.body_hits;
-		List<Integer> positions = termPos.get(queryWord);
-		if (positions == null) {
-			bodyTF.put(queryWord, 0.0);
-		} else {
-			bodyTF.put(queryWord, (double) positions.size());
+		if (d.body_hits != null) {
+			Map<String, List<Integer>> termPos = d.body_hits;
+			List<Integer> positions = termPos.get(queryWord);
+			if (positions == null) {
+				bodyTF.put(queryWord, 0.0);
+			} else {
+				bodyTF.put(queryWord, (double) positions.size());
+			}
 		}
 	}
 
