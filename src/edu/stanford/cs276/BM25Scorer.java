@@ -36,7 +36,7 @@ public class BM25Scorer extends AScorer {
 
 	double k1=-1;
 	double pageRankLambda=-1;
-	double pageRankLambdaPrime=-1;
+	double pageRankLambdaPrime=1;
 	//////////////////////////////////////////
 
 	/////// BM25 data structures - feel free to modify ///////
@@ -69,19 +69,19 @@ public class BM25Scorer extends AScorer {
 					double length = 0.0;
 					switch(type) {
 					case "url":
-						//weight = urlweight;
+						weight = urlweight;
 						length = 1.0;
 						break;
 					case "title":
-						//weight = titleweight;
+						weight = titleweight;
 						length = d.title.split(" ").length;
 						break;
 					case "body":
-						//weight = bodyweight;
+						weight = bodyweight;
 						length = d.body_length;
 						break;
 					case "anchor":
-						//weight = anchorweight;
+						weight = anchorweight;
 						double anchor_counts = 0.0;
 						if(d.anchors != null) {
 							for (String anchor : d.anchors.keySet()) {
@@ -91,7 +91,7 @@ public class BM25Scorer extends AScorer {
 						length = anchor_counts;
 						break;
 					case "header":
-						//weight = headerweight;
+						weight = headerweight;
 						if (d.headers != null) {
 							length = d.headers.size();
 						} else {
@@ -99,13 +99,14 @@ public class BM25Scorer extends AScorer {
 						}
 						break;
 					}
+					length *= weight;
 					if (avgLengths.containsKey(type)) {
 						avgLengths.put(type, avgLengths.get(type) + length/TOTAL_CORPUS_DOCS);
 					} else {
 						avgLengths.put(type, length/TOTAL_CORPUS_DOCS);
 					}
 					dLengths.put(type, length);
-					dl += length; // * weight;
+					dl += length;
 				} // type loop
 				lengths.put(d, dLengths);
 				pagerankScores.put(d, (double)d.page_rank);
@@ -179,10 +180,17 @@ public class BM25Scorer extends AScorer {
 				idf = idfs.get(term);
 			}
 			//TODO figure out what vj function is
-			double vj = 0.0;
+			double vj = V_func(d.page_rank);
 			score += (documentVector.get(term) * idf) / (k1 + documentVector.get(term)) + pageRankLambda*vj;
 		}
 		return score;
+	}
+	
+	private double V_func(double pageRank) {
+		// three options provided by lecture
+//		return Math.log(pageRankLambdaPrime * pageRank);
+		return pageRank / (pageRankLambdaPrime + pageRank);
+		//return 1.0 / (pageRankLambdaPrime + Math.exp(-pageRank * pageRankLambdaDoublePrime))
 	}
 
 
