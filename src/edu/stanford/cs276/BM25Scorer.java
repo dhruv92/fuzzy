@@ -21,22 +21,22 @@ public class BM25Scorer extends AScorer {
 
 
 	/////////////// Weights /////////////////
-	double urlweight = -1;
-	double titleweight  = -1;
+	double urlweight = -1.5;
+	double titleweight = -4.4;
 	double bodyweight = -1;
-	double headerweight = -1;
-	double anchorweight = -1;
+	double headerweight = -1.1;
+	double anchorweight = -10.5;
 
 	/////// BM25 specific weights ///////////
-	double burl=-1;
-	double btitle=-1;
-	double bheader=-1;
+	double burl=-.2;
+	double btitle=-.05;
+	double bheader=-1.1;
 	double bbody=-1;
-	double banchor=-1;
+	double banchor=-20;
 
-	double k1=-1;
+	double k1=-1.01;
 	double pageRankLambda=-1;
-	double pageRankLambdaPrime=1;
+	double pageRankLambdaPrime=300;
 	double pageRankLambdaDoublePrime=1;
 	//////////////////////////////////////////
 
@@ -58,7 +58,7 @@ public class BM25Scorer extends AScorer {
 		 * @//TODO : Your code here
 		 */
 
-		//TODO : Figure out if we want zone weighted lengths (like in lecture)
+		
 		for (Query query : queryDict.keySet()) {
 			Map<String, Document> retrievedDocs = queryDict.get(query);
 			for (String url : retrievedDocs.keySet()) {
@@ -166,7 +166,7 @@ public class BM25Scorer extends AScorer {
 				}
 				//TODO decide if we should do sublinear scaling on document term frequencies
 				if (termFreq.containsKey(term)) {
-					termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
+					termScore += weight * termFreq.get(term);
 				}
 			} //type loop
 			documentVector.put(term, termScore);
@@ -190,8 +190,8 @@ public class BM25Scorer extends AScorer {
 	private double V_func(double pageRank) {
 		// three options provided by lecture
 //		return Math.log(pageRankLambdaPrime * pageRank);
-//		return pageRank / (pageRankLambdaPrime + pageRank);
-		return 1.0 / (pageRankLambdaPrime + Math.exp(-pageRank * pageRankLambdaDoublePrime));
+		return pageRank / (pageRankLambdaPrime + pageRank);
+//		return 1.0 / (pageRankLambdaPrime + Math.exp(-pageRank * pageRankLambdaDoublePrime));
 	}
 
 
