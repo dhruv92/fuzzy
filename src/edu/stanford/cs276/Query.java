@@ -17,8 +17,14 @@ public class Query {
 		
 		// force lowercase
 		for (String word : queryWordsInput) {
-			queryWords.add(word.toLowerCase());
+			// force no duplicates
+			word = word.toLowerCase();
+			if(!queryWords.contains(word)) {
+				queryWords.add(word);
+			}
 		}
+		
+		
 	}
 	
 	

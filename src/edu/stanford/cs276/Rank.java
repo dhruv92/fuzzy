@@ -52,7 +52,13 @@ public class Rank {
 					/*
 					 * @//TODO : Your code here
 					 */
-					return -1;
+					if (o1.getSecond() - o2.getSecond() < 0) {
+						return -1;
+					} else if (o1.getSecond() - o2.getSecond() == 0) {
+						return 0;
+					} else {
+						return 1;
+					}
 				}	
 			});
 			
@@ -134,7 +140,7 @@ public class Rank {
 		//Map<String,Double> idfs = LoadHandler.buildDFs("/Users/james/Documents/workspace/cs276-pa1/data", "idfFile");
 		
 		// RUN THIS EVERY OTHER TIME
-		Map<String,Double> idfs = LoadHandler.loadDFs("/Users/james/Documents/workspace/fuzzy/idfFile");
+		Map<String,Double> idfs = LoadHandler.loadDFs("idfFile");
 
 		String scoreType = args[1];
 		
