@@ -35,7 +35,7 @@ public class SmallestWindowScorer extends CosineSimilarityScorer {
 		double curSmallestWindow = Double.POSITIVE_INFINITY;
 
 		//TODO FIll this out for each type 
-		curSmallestWindow = checkWindow(q, d, d.title, curSmallestWindow, false);
+		if (d.title != null) curSmallestWindow = checkWindow(q, d, d.title, curSmallestWindow, false);
 		if (d.anchors != null) {
 			for (String anchor : d.anchors.keySet()) {
 				curSmallestWindow = checkWindow(q, d, anchor, curSmallestWindow, false);
@@ -46,7 +46,7 @@ public class SmallestWindowScorer extends CosineSimilarityScorer {
 				curSmallestWindow = checkWindow(q, d, header, curSmallestWindow, false);
 			}
 		}
-		curSmallestWindow = checkWindow(q, d, "", curSmallestWindow, true); //body hits
+		if (d.body_hits != null) curSmallestWindow = checkWindow(q, d, "", curSmallestWindow, true); //body hits
 
 		if (curSmallestWindow == Double.POSITIVE_INFINITY) {
 			boostmod = 1 / B;
