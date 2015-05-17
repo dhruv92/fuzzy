@@ -29,7 +29,7 @@ public class Rank {
 			scorer = new BM25Scorer(idfs,queryDict);
 		else if (scoreType.equals("window"))
 			// Feel free to change this to match your cosine scorer if you choose to build on top of that instead
-			scorer = new SmallestWindowScorer(idfs,queryDict);
+			scorer = new SmallestWindowScorer(idfs);
 		else if (scoreType.equals("extra"))
 			scorer = new ExtraCreditScorer(idfs);
 		

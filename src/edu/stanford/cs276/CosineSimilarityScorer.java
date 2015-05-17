@@ -37,26 +37,23 @@ public class CosineSimilarityScorer extends AScorer {
 	double smoothingBodyLength = 500; // Smoothing factor when the body length is 0.
 	//////////////////////////////////////////
 
-	public double getNetScore(Map<String, Map<String, Double>> tfs, Query q, Map<String,Double> tfQuery, Document d) {
+	public double getNetScore(Map<String, Double> documentVector, Map<String,Double> tfQuery) {
 		double score = 0.0;
 		
 		/*
 		 * @//TODO : Your code here
 		 */
-		Map<String, Double> documentVector = getDocumentVector(tfQuery, tfs);
-		
-		normalizeQFs(tfQuery);
-		
 		//do dot product of query vector & document vector to get score
 		for (String term : tfQuery.keySet()) {
-			//TODO decide if we should do sublinear scaling on query term frequencies
-			double queryFreq = tfQuery.get(term); //subLinearScale(tfQuery.get(term)
+			double queryFreq = tfQuery.get(term);
 			double docFreq = documentVector.get(term);
 			score += queryFreq * docFreq;
 		}
 		
 		return score;
 	}
+	
+	
 	
 	public Map<String, Double> getDocumentVector(Map<String, Double> tfQuery, Map<String, Map<String, Double>> tfs) {
 		//combine the various term frequencies into one document vector
@@ -98,7 +95,7 @@ public class CosineSimilarityScorer extends AScorer {
 		return 1 + Math.log(rawScore);
 	}
 	
-	//Normalize the query frequencies using IDF
+	//Normalize the query frequencies using IDF. Also decide if you want to do sublinear scaling
 	public void normalizeQFs(Map<String, Double> tfQuery) {
 		//For each term, come up with IDF & multiply against TF
 		for (String term : tfQuery.keySet()) {
@@ -109,7 +106,8 @@ public class CosineSimilarityScorer extends AScorer {
 			} else {
 				idf = idfs.get(term);
 			}
-			tfQuery.put(term, tfQuery.get(term) * idf); // multiply each TF by IDF
+			double idfWeightedFreq = tfQuery.get(term) * idf; // multiply each TF by IDF
+			tfQuery.put(term, idfWeightedFreq); //TODO decide if you want to do sublinear scaling: subLinearScale(idfWeightedFrew)
 		}
 	}
 	
@@ -137,8 +135,12 @@ public class CosineSimilarityScorer extends AScorer {
 		this.normalizeTFs(tfs, d, q);
 		
 		Map<String,Double> tfQuery = getQueryFreqs(q);
+		
+		Map<String, Double> documentVector = getDocumentVector(tfQuery, tfs);
+		
+		normalizeQFs(tfQuery);
 
-	    return getNetScore(tfs,q,tfQuery,d);
+	    return getNetScore(documentVector, tfQuery);
 	}
 
 }
