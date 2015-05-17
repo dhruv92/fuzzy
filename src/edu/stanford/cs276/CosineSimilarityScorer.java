@@ -19,7 +19,7 @@ import java.util.Set;
  * Skeleton code for the implementation of a Cosine Similarity Scorer in Task 1.
  */
 public class CosineSimilarityScorer extends AScorer {
-	
+
 	// For smoothing
 	private final static int TOTAL_CORPUS_DOCS = 98999;
 
@@ -39,7 +39,7 @@ public class CosineSimilarityScorer extends AScorer {
 
 	public double getNetScore(Map<String, Double> documentVector, Map<String,Double> tfQuery) {
 		double score = 0.0;
-		
+
 		/*
 		 * @//TODO : Your code here
 		 */
@@ -49,12 +49,12 @@ public class CosineSimilarityScorer extends AScorer {
 			double docFreq = documentVector.get(term);
 			score += queryFreq * docFreq;
 		}
-		
+
 		return score;
 	}
-	
-	
-	
+
+
+
 	public Map<String, Double> getDocumentVector(Map<String, Double> tfQuery, Map<String, Map<String, Double>> tfs) {
 		//combine the various term frequencies into one document vector
 		Map<String, Double> documentVector = new HashMap<String, Double>();
@@ -64,37 +64,45 @@ public class CosineSimilarityScorer extends AScorer {
 			for (String type : tfs.keySet()) {
 				Map<String, Double> termFreq = tfs.get(type);
 				double weight = 1.0;
-				switch(type) {
+				double tf = 1.0;
+				if (termFreq.containsKey(term)) {
+					switch(type) {
 					case "url":
 						weight = urlweight;
+						tf = termFreq.get(term);
 						break;
 					case "title":
 						weight = titleweight;
+						tf = termFreq.get(term);
 						break;
 					case "body":
 						weight = bodyweight;
+						tf = termFreq.get(term);
 						break;
 					case "anchor":
 						weight = anchorweight;
+						tf = termFreq.get(term);
 						break;
 					case "header":
 						weight = headerweight;
+						tf = termFreq.get(term);
 						break;
+					}
+					//TODO decide if we should do sublinear scaling on document term frequencies
+					termScore += weight * tf;
 				}
-				//TODO decide if we should do sublinear scaling on document term frequencies
-				if (termFreq.containsKey(term)) termScore += weight * termFreq.get(term); //weight * subLinearScale(termFreq.get(term))
 			}
 			documentVector.put(term, termScore);
 		}
 		return documentVector;
 	}
-	
+
 	private double subLinearScale(double rawScore) {
 		if (rawScore <= 0) return 0;
-		
+
 		return 1 + Math.log(rawScore);
 	}
-	
+
 	//Normalize the query frequencies using IDF. Also decide if you want to do sublinear scaling
 	public void normalizeQFs(Map<String, Double> tfQuery) {
 		//For each term, come up with IDF & multiply against TF
@@ -110,15 +118,15 @@ public class CosineSimilarityScorer extends AScorer {
 			tfQuery.put(term, idfWeightedFreq); //TODO decide if you want to do sublinear scaling: subLinearScale(idfWeightedFrew)
 		}
 	}
-	
-	
+
+
 	// Normalize the term frequencies. Note that we should give uniform normalization to all fields as discussed
 	// in the assignment handout.
 	public void normalizeTFs(Map<String,Map<String, Double>> tfs,Document d, Query q) {
 		/*
 		 * @//TODO : Your code here
 		 */
-		
+
 		for (Map<String, Double> termFreq: tfs.values()) {
 			for (String k : termFreq.keySet()) {
 				termFreq.put(k, termFreq.get(k) / ((double) d.body_length + smoothingBodyLength));
@@ -129,18 +137,18 @@ public class CosineSimilarityScorer extends AScorer {
 
 	@Override
 	public double getSimScore(Document d, Query q) {
-		
+
 		Map<String,Map<String, Double>> tfs = this.getDocTermFreqs(d,q);
-		
+
 		this.normalizeTFs(tfs, d, q);
-		
+
 		Map<String,Double> tfQuery = getQueryFreqs(q);
-		
+
 		Map<String, Double> documentVector = getDocumentVector(tfQuery, tfs);
-		
+
 		normalizeQFs(tfQuery);
 
-	    return getNetScore(documentVector, tfQuery);
+		return getNetScore(documentVector, tfQuery);
 	}
 
 }
