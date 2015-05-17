@@ -37,6 +37,7 @@ public class BM25Scorer extends AScorer {
 	double k1=-1;
 	double pageRankLambda=-1;
 	double pageRankLambdaPrime=1;
+	double pageRankLambdaDoublePrime=1;
 	//////////////////////////////////////////
 
 	/////// BM25 data structures - feel free to modify ///////
@@ -189,8 +190,8 @@ public class BM25Scorer extends AScorer {
 	private double V_func(double pageRank) {
 		// three options provided by lecture
 //		return Math.log(pageRankLambdaPrime * pageRank);
-		return pageRank / (pageRankLambdaPrime + pageRank);
-		//return 1.0 / (pageRankLambdaPrime + Math.exp(-pageRank * pageRankLambdaDoublePrime))
+//		return pageRank / (pageRankLambdaPrime + pageRank);
+		return 1.0 / (pageRankLambdaPrime + Math.exp(-pageRank * pageRankLambdaDoublePrime));
 	}
 
 
