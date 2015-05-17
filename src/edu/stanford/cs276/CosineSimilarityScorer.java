@@ -28,13 +28,13 @@ public class CosineSimilarityScorer extends AScorer {
 	}
 
 	/////////////// Weights //////////////////
-	double urlweight = -1;
-	double titleweight = -1;
+	double urlweight = -1.5;
+	double titleweight = -4.4;
 	double bodyweight = -1;
-	double headerweight = -1;
-	double anchorweight = -1;
+	double headerweight = -1.1;
+	double anchorweight = -10.5;
 
-	double smoothingBodyLength = 500; // Smoothing factor when the body length is 0.
+	double smoothingBodyLength = 575; // Smoothing factor when the body length is 0.
 	//////////////////////////////////////////
 
 	public double getNetScore(Map<String, Double> documentVector, Map<String,Double> tfQuery) {
@@ -89,6 +89,7 @@ public class CosineSimilarityScorer extends AScorer {
 						break;
 					}
 					//TODO decide if we should do sublinear scaling on document term frequencies
+					// Sublinear scoring reduced accuracy when applied to any zone
 					termScore += weight * tf;
 				}
 			}
