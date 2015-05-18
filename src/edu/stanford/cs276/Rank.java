@@ -129,9 +129,9 @@ public class Rank {
 	public static void main(String[] args) throws IOException {
 
 
-		if (args.length < 2) {
-			System.err.println("Insufficient number of arguments: <queryDocTrainData path> taskType");
-		}
+//		if (args.length < 2) {
+//			System.err.println("Insufficient number of arguments: <queryDocTrainData path> taskType");
+//		}
 		
 		
 		// To store the idfs for different words in the collection
@@ -142,7 +142,7 @@ public class Rank {
 		// RUN THIS EVERY OTHER TIME
 		 Map<String,Double> idfs = LoadHandler.loadDFs("idfFile");
 
-		String scoreType = args[1];
+		String scoreType = args[0];
 		
 		if (!(scoreType.equals("baseline") || scoreType.equals("cosine") || scoreType.equals("bm25")
 				|| scoreType.equals("extra") || scoreType.equals("window"))) {
@@ -152,8 +152,9 @@ public class Rank {
 		Map<Query,Map<String, Document>> queryDict=null;
 		
 		// Populate map with features from file
+		String trainData = "2015.data/pa3.signal.train";
 		try {
-			queryDict = LoadHandler.loadTrainData(args[0]);
+			queryDict = LoadHandler.loadTrainData(trainData);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

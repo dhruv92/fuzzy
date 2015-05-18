@@ -18,7 +18,7 @@ import java.util.TreeSet;
 public class SmallestWindowScorer extends CosineSimilarityScorer {
 
 	/////// Smallest window specific hyper-parameters ////////
-	double B = 1000; //some arbitrary start     	    
+	double B = 155; //some arbitrary start     	    
 	double boostmod = -1;
 
 	//////////////////////////////
