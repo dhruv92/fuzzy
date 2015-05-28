@@ -1,11 +1,11 @@
-<project name="pa3" default="dist" basedir=".">
+<project name="cs276-pa4" default="compile" basedir=".">
     <description>
         simple example bin file
     </description>
   <!-- set global properties for this bin -->
   <property name="src" location="src"/>
   <property name="bin" location="bin"/>
-  <property name="program" location="pa3"/>
+  <property name="program" location="cs276-pa4"/>
   <property environment="env"/>
 
   <target name="init">
@@ -18,13 +18,16 @@
   <!-- classpaths -->
   <path id="compile.classpath">
     <pathelement location="bin"/>
-    </path>
+    <fileset dir=".">
+      <include name="lib/weka.jar"/>
+      <include name="lib/ejml-0.25.jar"/>
+    </fileset>
+  </path>
 
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${bin} -->
     <javac srcdir="${src}" destdir="${bin}" debug="true" includeantruntime="false">
-      <!-- Thang added classpaths -->
       <classpath refid="compile.classpath"/>
     </javac>
   </target>
