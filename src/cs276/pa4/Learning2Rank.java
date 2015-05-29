@@ -15,6 +15,7 @@ import weka.core.Instances;
 
 public class Learning2Rank {
 
+	private final static int TOTAL_CORPUS_DOCS = 98998;
 	
 	public static Classifier train(String train_data_file, String train_rel_file, int task, Map<String,Double> idfs) throws Exception {
 	    System.err.println("## Training with feature_file =" + train_data_file + ", rel_file = " + train_rel_file + " ... \n");
@@ -124,6 +125,11 @@ public class Learning2Rank {
 	      idfs = Util.loadDFs(dfFile);
 	    } catch(IOException e){
 	      e.printStackTrace();
+	    }
+	    /* Convert DFs to IDFs */
+	    for (String term : idfs.keySet()) {
+	    	double idf = Math.log(TOTAL_CORPUS_DOCS / idfs.get(term));
+	    	idfs.put(term, idf);
 	    }
 	    
 	    /* Train & test */
