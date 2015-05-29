@@ -63,10 +63,7 @@ public class Learning2Rank {
 				learner = new PairwiseLearner(isLinearKernel);
 			} else if (task == 3) {
 
-				/* 
-				 * @TODO: Your code here, add more features 
-				 * */
-				System.err.println("Task 3");
+				learner = new ComboLearner();
 				
 			} else if (task == 4) {
 				

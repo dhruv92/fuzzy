@@ -49,7 +49,7 @@ public class PointwiseLearner extends Learner {
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 
 		/* Calculate score features from training data */
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 
 		/* Load relevance labels */
 		Map<String, Map<String, Double>> relMap = Util.loadRelevanceLabels(train_rel_file);
@@ -98,7 +98,7 @@ public class PointwiseLearner extends Learner {
 		
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
 		
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 		
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;

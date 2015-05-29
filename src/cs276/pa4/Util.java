@@ -165,7 +165,7 @@ public class Util {
 		return queryDocMap;
 	}
 
-	public static Map<String, Map<String, Double[]>> getTFIDFs(Instances dataset, Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
+	public static Map<String, Map<String, Double[]>> getTFIDFs(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
 
 		Map<String, Map<String, Double[]>> all_tfidfs = new HashMap<String, Map<String, Double[]>>();
 		for (Query query : queryDocMap.keySet()) {

@@ -14,6 +14,7 @@ import java.util.StringTokenizer;
 
 
 
+
 //import edu.stanford.cs276.Document;
 //import edu.stanford.cs276.Query;
 import weka.classifiers.Classifier;
@@ -24,6 +25,33 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class ComboLearner extends Learner {
+	
+	Map<String, Map<String, Double[]>> combineFeatures(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
+		
+		Map<String, Map<String, Double[]>> comboFeatures = new HashMap<String, Map<String, Double[]>>(); 
+		
+		Map<String, Map<String, Double[]>> tfidfs = Util.getTFIDFs(queryDocMap, idfs);
+		Map<String, Map<String, Double>> bm25_scores = null;//Util.getBM25s();
+		Map<String, Map<String, Double>> smallest_windows = null;//Util.getSmallestWindows();
+		Map<String, Map<String, Double>> pageranks = null;//Util.getPageranks();
+		
+		for (String query : tfidfs.keySet()) {
+			Map<String, Double[]> query_doc_set = new HashMap<String, Double[]>();
+			for (String url : tfidfs.get(query).keySet()) {
+				ArrayList<Double> doc_features = new ArrayList<Double>();
+				for (Double field_tfidf : tfidfs.get(query).get(url)) {
+					doc_features.add(field_tfidf);
+				}
+				if(bm25_scores != null) doc_features.add(bm25_scores.get(query).get(url));
+				if(smallest_windows != null) doc_features.add(smallest_windows.get(query).get(url));
+				if(pageranks != null) doc_features.add(pageranks.get(query).get(url));
+				Double[] doc_arr = new Double[doc_features.size()];
+				query_doc_set.put(url, doc_features.toArray(doc_arr));
+			}
+			comboFeatures.put(query, query_doc_set);
+		}
+		return comboFeatures;
+	}
 
 	@Override
 	public Instances extract_train_features(String train_data_file,
@@ -42,6 +70,9 @@ public class ComboLearner extends Learner {
 				"body_w",
 				"header_w",
 				"anchor_w",
+//				"bm25_score_w",
+//				"smallest_window_w",
+//				"pagerank_w",
 				"relevance_score"}, 
 				"train_dataset");
 
@@ -49,7 +80,7 @@ public class ComboLearner extends Learner {
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 
 		/* Calculate score features from training data */
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = combineFeatures(queryDocMap, idfs);
 
 		/* Load relevance labels */
 		Map<String, Map<String, Double>> relMap = Util.loadRelevanceLabels(train_rel_file);
@@ -59,7 +90,7 @@ public class ComboLearner extends Learner {
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
 				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
-				for (int i = 0; i < instance_d.length; i++) {
+				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}
 				instance_d[instance_d.length-1] = relMap.get(query).get(url);
@@ -93,12 +124,15 @@ public class ComboLearner extends Learner {
 				"body_w",
 				"header_w",
 				"anchor_w",
+//				"bm25_score_w",
+//				"smallest_window_w",
+//				"pagerank_w",
 				"relevance_score"}, 
-				"train_dataset");
+				"test_dataset");
 		
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
 		
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = combineFeatures(queryDocMap, idfs);
 		
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;
@@ -108,7 +142,7 @@ public class ComboLearner extends Learner {
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
 				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
-				for (int i = 0; i < instance_d.length; i++) {
+				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}
 				Instance inst = new DenseInstance(1.0, instance_d);
