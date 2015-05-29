@@ -15,6 +15,11 @@ import java.util.StringTokenizer;
 
 
 
+
+
+
+
+
 //import edu.stanford.cs276.Document;
 //import edu.stanford.cs276.Query;
 import weka.classifiers.Classifier;
@@ -26,14 +31,16 @@ import weka.core.Instances;
 
 public class ComboLearner extends Learner {
 	
-	Map<String, Map<String, Double[]>> combineFeatures(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
+	Map<String, Map<String, Double[]>> combineFeatures(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs, String train_data_file) throws Exception {
 		
 		Map<String, Map<String, Double[]>> comboFeatures = new HashMap<String, Map<String, Double[]>>(); 
 		
+		Map<Query,Map<String, Document>> queryDict = LoadHandler.loadTrainData(train_data_file);
+		
 		Map<String, Map<String, Double[]>> tfidfs = Util.getTFIDFs(queryDocMap, idfs);
-		Map<String, Map<String, Double>> bm25_scores = null;//Util.getBM25s();
-		Map<String, Map<String, Double>> smallest_windows = null;//Util.getSmallestWindows();
-		Map<String, Map<String, Double>> pageranks = null;//Util.getPageranks();
+		Map<String, Map<String, Double>> bm25_scores = Util.getBM25s(queryDict, idfs);
+		Map<String, Map<String, Double>> smallest_windows = Util.getSmallestWindows(queryDict, idfs);
+		Map<String, Map<String, Double>> pageranks = Util.getPageranks(queryDocMap);
 		
 		for (String query : tfidfs.keySet()) {
 			Map<String, Double[]> query_doc_set = new HashMap<String, Double[]>();
@@ -55,7 +62,7 @@ public class ComboLearner extends Learner {
 
 	@Override
 	public Instances extract_train_features(String train_data_file,
-			String train_rel_file, Map<String, Double> idfs) {
+			String train_rel_file, Map<String, Double> idfs) throws Exception {
 
 		/*
 		 * @TODO: Below is a piece of sample code to show 
@@ -70,9 +77,9 @@ public class ComboLearner extends Learner {
 				"body_w",
 				"header_w",
 				"anchor_w",
-//				"bm25_score_w",
-//				"smallest_window_w",
-//				"pagerank_w",
+				"bm25_score_w",
+				"smallest_window_w",
+				"pagerank_w",
 				"relevance_score"}, 
 				"train_dataset");
 
@@ -80,7 +87,7 @@ public class ComboLearner extends Learner {
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 
 		/* Calculate score features from training data */
-		Map<String, Map<String, Double[]>> features = combineFeatures(queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = combineFeatures(queryDocMap, idfs, train_data_file);
 
 		/* Load relevance labels */
 		Map<String, Map<String, Double>> relMap = Util.loadRelevanceLabels(train_rel_file);
@@ -89,7 +96,7 @@ public class ComboLearner extends Learner {
 		for (String query : features.keySet()) {
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
-				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
+				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
 				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}
@@ -124,15 +131,20 @@ public class ComboLearner extends Learner {
 				"body_w",
 				"header_w",
 				"anchor_w",
-//				"bm25_score_w",
-//				"smallest_window_w",
-//				"pagerank_w",
+				"bm25_score_w",
+				"smallest_window_w",
+				"pagerank_w",
 				"relevance_score"}, 
 				"test_dataset");
 		
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
 		
-		Map<String, Map<String, Double[]>> features = combineFeatures(queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = null;
+		try {
+			features = combineFeatures(queryDocMap, idfs, test_data_file);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;
@@ -141,7 +153,7 @@ public class ComboLearner extends Learner {
 			Map<String, Integer> query_indexes = new HashMap<String, Integer>();
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
-				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
+				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
 				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}

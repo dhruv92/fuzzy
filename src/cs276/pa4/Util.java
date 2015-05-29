@@ -38,8 +38,7 @@ public class Util {
 				numQuery++;
 				result.put(query, new ArrayList<Document>());
 			} else if (key.equals("url")) {
-				doc = new Document();
-				doc.url = new String(value);
+				doc = new Document(new String(value));
 				result.get(query).add(doc);
 				numDoc++;
 			} else if (key.equals("title")) {
@@ -163,6 +162,51 @@ public class Util {
 			e.printStackTrace();
 		}
 		return queryDocMap;
+	}
+	
+	public static Map<String, Map<String, Double>> getPageranks(Map<Query,List<Document>> queryDocMap) {
+		Map<String, Map<String, Double>> pageranks = new HashMap<String, Map<String, Double>>();
+		for (Query query : queryDocMap.keySet()) {
+			Map<String, Double> query_pageranks = new HashMap<String, Double>();
+			for (Document doc : queryDocMap.get(query)) {
+				query_pageranks.put(doc.url, doc.page_rank + 0.0);
+			}
+			pageranks.put(query.query, query_pageranks);
+		}
+		return pageranks;
+		
+	}
+	
+	public static Map<String, Map<String, Double>> getBM25s(Map<Query,Map<String, Document>> queryDict, Map<String, Double> idfs) throws Exception {
+	
+		Map<String, Map<String, Double>> smallest_windows = new HashMap<String, Map<String, Double>>();
+		AScorer scorer = new SmallestWindowScorer(idfs);
+		for (Query query : queryDict.keySet()) {
+			// Loop through urls for query, getting scores
+			Map<String, Double> query_sw = new HashMap<String, Double>();
+			for (String url : queryDict.get(query).keySet()) {
+				double score = scorer.getSimScore(queryDict.get(query).get(url), query);
+				query_sw.put(url, score);
+			}
+			smallest_windows.put(query.query, query_sw);
+		}
+		return smallest_windows;
+	}
+	
+	public static Map<String, Map<String, Double>> getSmallestWindows(Map<Query,Map<String, Document>> queryDict, Map<String, Double> idfs) throws Exception {
+		
+		Map<String, Map<String, Double>> bm25s = new HashMap<String, Map<String, Double>>();
+		AScorer scorer = new BM25Scorer(idfs,queryDict);
+		for (Query query : queryDict.keySet()) {
+			// Loop through urls for query, getting scores
+			Map<String, Double> query_bm25s = new HashMap<String, Double>();
+			for (String url : queryDict.get(query).keySet()) {
+				double score = scorer.getSimScore(queryDict.get(query).get(url), query);
+				query_bm25s.put(url, score);
+			}
+			bm25s.put(query.query, query_bm25s);
+		}
+		return bm25s;
 	}
 
 	public static Map<String, Map<String, Double[]>> getTFIDFs(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
