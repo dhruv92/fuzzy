@@ -140,16 +140,14 @@ public class Util {
 
 	/* start extracting tf idfs, setting up models, etc. helper functions */
 
-	public static Instances newFieldsDataset() {
+	public static Instances newFieldsDataset(String[] attribute_strs, String dataset_name) {
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-		attributes.add(new Attribute("url_w"));
-		attributes.add(new Attribute("title_w"));
-		attributes.add(new Attribute("body_w"));
-		attributes.add(new Attribute("header_w"));
-		attributes.add(new Attribute("anchor_w"));
-		attributes.add(new Attribute("relevance_score"));
+		for (String att_str : attribute_strs) {
+			attributes.add(new Attribute(att_str));
+		}
+		
 
-		Instances dataset = new Instances("train_dataset", attributes, 0);
+		Instances dataset = new Instances(dataset_name, attributes, 0);
 
 		/* Set last attribute as target */
 		dataset.setClassIndex(dataset.numAttributes() - 1);

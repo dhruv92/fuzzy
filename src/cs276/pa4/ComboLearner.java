@@ -2,12 +2,12 @@ package cs276.pa4;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
 
 
 
@@ -23,7 +23,7 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class PointwiseLearner extends Learner {
+public class ComboLearner extends Learner {
 
 	@Override
 	public Instances extract_train_features(String train_data_file,
@@ -94,7 +94,7 @@ public class PointwiseLearner extends Learner {
 				"header_w",
 				"anchor_w",
 				"relevance_score"}, 
-				"test_dataset");
+				"train_dataset");
 		
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
 		
