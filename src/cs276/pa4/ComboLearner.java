@@ -21,7 +21,7 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class PointwiseLearner extends Learner {
+public class ComboLearner extends Learner {
 
 	// Various types of term frequencies that you will need
 	String[] TFTYPES = {"url","title","body","header","anchor"};

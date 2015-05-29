@@ -31,7 +31,7 @@ public class Learning2Rank {
 			/* 
 			 * @TODO: Your code here, add more features 
 			 * */
-			System.err.println("Task 3");
+			learner = new ComboLearner();
 			
 		} else if (task == 4) {
 			
@@ -150,5 +150,9 @@ public class Learning2Rank {
 	        e.printStackTrace();
 	      }
 	    }
+	    
+	    /* performance on the training data */
+	    ndcg = new NdcgMain("data/pa4.rel.dev");
+	    System.err.println("# Test NDCG=" + ndcg.score(ranked_out_file));
 	}
 }
