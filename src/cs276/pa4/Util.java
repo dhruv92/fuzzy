@@ -145,7 +145,7 @@ public class Util {
 		for (String att_str : attribute_strs) {
 			attributes.add(new Attribute(att_str));
 		}
-		
+
 
 		Instances dataset = new Instances(dataset_name, attributes, 0);
 
@@ -154,12 +154,12 @@ public class Util {
 
 		return dataset;
 	}
-	
+
 	public static Instances newPairwiseFieldsDataset(String dataset_name) {
 		List<String> cl = new ArrayList<String>();
 		cl.add("first");
 		cl.add("second");
-		
+
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(new Attribute("url_w"));
 		attributes.add(new Attribute("title_w"));
@@ -167,7 +167,7 @@ public class Util {
 		attributes.add(new Attribute("header_w"));
 		attributes.add(new Attribute("anchor_w"));
 		attributes.add(new Attribute("class", cl));
-		
+
 		Instances dataset = new Instances(dataset_name, attributes, 0);
 
 		/* Set last attribute as target */
@@ -184,7 +184,7 @@ public class Util {
 		}
 		return queryDocMap;
 	}
-	
+
 	public static Map<String, Map<String, Double>> getPageranks(Map<Query,List<Document>> queryDocMap) {
 		Map<String, Map<String, Double>> pageranks = new HashMap<String, Map<String, Double>>();
 		for (Query query : queryDocMap.keySet()) {
@@ -195,11 +195,44 @@ public class Util {
 			pageranks.put(query.query, query_pageranks);
 		}
 		return pageranks;
-		
+
 	}
-	
+
+	public static Map<String, Map<String, Double>> getAnchorCounts(Map<Query,List<Document>> queryDocMap) {
+		Map<String, Map<String, Double>> anchor_counts = new HashMap<String, Map<String, Double>>();
+		for (Query query : queryDocMap.keySet()) {
+			Map<String, Double> query_anchor_counts = new HashMap<String, Double>();
+			for (Document doc : queryDocMap.get(query)) {
+				double doc_anchor_count = 0.0;
+				if(doc.anchors != null) {
+					for (Integer anchor_count : doc.anchors.values()) {
+						doc_anchor_count += anchor_count;
+					}
+				}
+				query_anchor_counts.put(doc.url, doc_anchor_count);
+			}
+			anchor_counts.put(query.query, query_anchor_counts);
+		}
+		return anchor_counts;
+	}
+
+	public static Map<String, Map<String, Double>> getIsSHTML(Map<Query,List<Document>> queryDocMap) {
+		Map<String, Map<String, Double>> shtmls = new HashMap<String, Map<String, Double>>();
+		for (Query query : queryDocMap.keySet()) {
+			Map<String, Double> query_is_shtml = new HashMap<String, Double>();
+			for (Document doc : queryDocMap.get(query)) {
+				double is_shtml = -1.0;
+				if(doc.url.substring(doc.url.length()-6).equals(".shtml")) is_shtml = 1.0;
+				query_is_shtml.put(doc.url, is_shtml);
+			}
+			shtmls.put(query.query, query_is_shtml);
+		}
+		return shtmls;
+	}
+
+
 	public static Map<String, Map<String, Double>> getBM25s(Map<Query,Map<String, Document>> queryDict, Map<String, Double> idfs) throws Exception {
-	
+
 		Map<String, Map<String, Double>> smallest_windows = new HashMap<String, Map<String, Double>>();
 		AScorer scorer = new SmallestWindowScorer(idfs);
 		for (Query query : queryDict.keySet()) {
@@ -213,9 +246,9 @@ public class Util {
 		}
 		return smallest_windows;
 	}
-	
+
 	public static Map<String, Map<String, Double>> getSmallestWindows(Map<Query,Map<String, Document>> queryDict, Map<String, Double> idfs) throws Exception {
-		
+
 		Map<String, Map<String, Double>> bm25s = new HashMap<String, Map<String, Double>>();
 		AScorer scorer = new BM25Scorer(idfs,queryDict);
 		for (Query query : queryDict.keySet()) {
@@ -230,15 +263,15 @@ public class Util {
 		return bm25s;
 	}
 
-	public static Map<String, Map<String, Double[]>> getTFIDFs(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs) {
+	public static Map<String, Map<String, Double[]>> getTFIDFs(Map<Query,List<Document>> queryDocMap, Map<String, Double> idfs, boolean use_sublinear) {
 
 		Map<String, Map<String, Double[]>> all_tfidfs = new HashMap<String, Map<String, Double[]>>();
 		for (Query query : queryDocMap.keySet()) {
 			Map<String, Double[]> doc_tfidfs = new HashMap<String, Double[]>();
 			for (Document doc : queryDocMap.get(query)) {
 				Map<String,Map<String, Double>> termFreqs = getDocTermFreqs(doc, query);
-				Double[] instance = {0.0, 0.0, 0.0, 0.0, 0.0};
-				ArrayList<Double> query_tfidfs = score(termFreqs, query, idfs);
+				Double[] instance = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+				ArrayList<Double> query_tfidfs = score(termFreqs, query, idfs, use_sublinear);
 				for (int i = 0; i < query_tfidfs.size(); i++) {
 					instance[i] = query_tfidfs.get(i);
 				}
@@ -350,14 +383,20 @@ public class Util {
 		}
 	}
 
-	private static ArrayList<Double> score(Map<String,Map<String, Double>> tfs, Query q, Map<String, Double> idfs) {
+	private static ArrayList<Double> score(Map<String,Map<String, Double>> tfs, Query q, Map<String, Double> idfs, boolean use_sublinear) {
 
 		ArrayList<Double> tfidfs = new ArrayList<Double>();
 		for (String field : tfs.keySet()) {
 			double dot_product = 0.0;
 			for (String word : q.words) {
 				if(tfs.get(field).containsKey(word) && idfs.containsKey(word)) {
-					dot_product += tfs.get(field).get(word) * idfs.get(word);
+					double tf = tfs.get(field).get(word);
+					if(use_sublinear) {
+						if(field.equals("title")) {
+							tf = Math.log(1+tf);
+						}
+					}
+					dot_product += tf * idfs.get(word);
 				}
 			}
 			tfidfs.add(dot_product);

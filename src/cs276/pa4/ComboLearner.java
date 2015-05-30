@@ -37,10 +37,12 @@ public class ComboLearner extends Learner {
 		
 		Map<Query,Map<String, Document>> queryDict = LoadHandler.loadTrainData(train_data_file);
 		
-		Map<String, Map<String, Double[]>> tfidfs = Util.getTFIDFs(queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> tfidfs = Util.getTFIDFs(queryDocMap, idfs, true);
 		Map<String, Map<String, Double>> bm25_scores = Util.getBM25s(queryDict, idfs);
 		Map<String, Map<String, Double>> smallest_windows = Util.getSmallestWindows(queryDict, idfs);
 		Map<String, Map<String, Double>> pageranks = Util.getPageranks(queryDocMap);
+		Map<String, Map<String, Double>> anchor_counts = Util.getAnchorCounts(queryDocMap);
+		Map<String, Map<String, Double>> shtmls = Util.getIsSHTML(queryDocMap);
 		
 		for (String query : tfidfs.keySet()) {
 			Map<String, Double[]> query_doc_set = new HashMap<String, Double[]>();
@@ -52,7 +54,15 @@ public class ComboLearner extends Learner {
 				if(bm25_scores != null) doc_features.add(bm25_scores.get(query).get(url));
 				if(smallest_windows != null) doc_features.add(smallest_windows.get(query).get(url));
 				if(pageranks != null) doc_features.add(pageranks.get(query).get(url));
+				if(anchor_counts != null) doc_features.add(anchor_counts.get(query).get(url));
+				if(shtmls != null) doc_features.add(shtmls.get(query).get(url));
 				Double[] doc_arr = new Double[doc_features.size()];
+				doc_arr = doc_features.toArray(doc_arr);
+//				for (Double feat_val : doc_arr) {
+//					System.out.print(feat_val + " ");
+//				}
+//				System.out.print('\n');
+//				System.out.print('\n');
 				query_doc_set.put(url, doc_features.toArray(doc_arr));
 			}
 			comboFeatures.put(query, query_doc_set);
@@ -80,6 +90,8 @@ public class ComboLearner extends Learner {
 				"bm25_score_w",
 				"smallest_window_w",
 				"pagerank_w",
+				"anchor_count_w",
+				"is_shtml_w",
 				"relevance_score"}, 
 				"train_dataset");
 
@@ -96,7 +108,7 @@ public class ComboLearner extends Learner {
 		for (String query : features.keySet()) {
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
-				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
+				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
 				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}
@@ -134,6 +146,8 @@ public class ComboLearner extends Learner {
 				"bm25_score_w",
 				"smallest_window_w",
 				"pagerank_w",
+				"anchor_count_w",
+				"is_shtml_w",
 				"relevance_score"}, 
 				"test_dataset");
 		
@@ -153,7 +167,7 @@ public class ComboLearner extends Learner {
 			Map<String, Integer> query_indexes = new HashMap<String, Integer>();
 			for (String url : features.get(query).keySet()) {
 				Double[] instance_D = features.get(query).get(url);
-				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
+				double[] instance_d = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; //needs to be primative for DenseInstance
 				for (int i = 0; i < instance_D.length; i++) {
 					instance_d[i] = instance_D[i];
 				}
