@@ -331,7 +331,7 @@ public class PairwiseLearner extends Learner {
 			Collections.sort(results, new RankedResultComparator(model));
 			relevance_predictions.put(query, getResultList(results));
 		}
-		return null;
+		return relevance_predictions;
 	}
 
 }
