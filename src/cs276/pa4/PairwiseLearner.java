@@ -49,7 +49,7 @@ public class PairwiseLearner extends Learner {
   /* start extract feature helper function */
   
   private static void standardizeFeatures(Map<String, Map<String, Double[]>> features) throws Exception {
-	  Instances stardizationDataset = Util.newFieldsDataset();
+	  Instances stardizationDataset = Util.newPairwiseFieldsDataset("standardizedataset");
 	  
 	  //put all the features into instances, maintain a pointer to the index in the dataset
 	  int index = 0;
@@ -208,13 +208,13 @@ public class PairwiseLearner extends Learner {
 		 */
 		
 		/*Build attributes list*/
-		Instances dataset = Util.newPairwiseFieldsDataset();
+		Instances dataset = Util.newPairwiseFieldsDataset("traindataset");
 		
 		/*Load training data */
 		Map<Query, List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 		
 		/* Calculate score features from training data for each doc */
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 		
 		/* Standardize the score features */
 		standardizeFeatures(features);
@@ -266,10 +266,10 @@ public class PairwiseLearner extends Learner {
 	public TestFeatures extract_test_features(String test_data_file,
 			Map<String, Double> idfs) throws Exception {
 		TestFeatures tester = new TestFeatures();
-		Instances dataset = Util.newPairwiseFieldsDataset();
+		Instances dataset = Util.newPairwiseFieldsDataset("testdataset");
 		
 		Map<Query, List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 		standardizeFeatures(features);
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;
