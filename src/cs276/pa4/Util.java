@@ -157,6 +157,28 @@ public class Util {
 	  return dataset;
   }
   
+  public static Instances newPairwiseFieldsDataset() {
+	  //the two classes is either first is more relevant or second is more relevant
+	  List<String> cl = new ArrayList<String>();
+	  cl.add("first");
+	  cl.add("second");
+	  
+	  ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+	  attributes.add(new Attribute("url_w"));
+	  attributes.add(new Attribute("title_w"));
+	  attributes.add(new Attribute("body_w"));
+	  attributes.add(new Attribute("header_w"));
+	  attributes.add(new Attribute("anchor_w"));
+	  attributes.add(new Attribute("class", cl));
+
+	  Instances dataset = new Instances("dataset", attributes, 0);
+
+	  /* Set last attribute as target */
+	  dataset.setClassIndex(dataset.numAttributes() - 1);
+
+	  return dataset;
+  }
+  
   public static Map<Query,List<Document>> loadQueryDocPairs(String train_data_file) {
 	  Map<Query,List<Document>> queryDocMap = null;
 	  try {

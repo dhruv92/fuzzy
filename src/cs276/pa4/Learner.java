@@ -15,7 +15,7 @@ public abstract class Learner {
 	public abstract Classifier training (Instances dataset);
 	
 	/* Construct testing features matrix */
-	public abstract TestFeatures extract_test_features(String test_data_file, Map<String,Double> idfs);
+	public abstract TestFeatures extract_test_features(String test_data_file, Map<String,Double> idfs) throws Exception;
 	
 	/* Test the model, return ranked queries */
 	public abstract Map<String, List<String>> testing(TestFeatures tf, Classifier model);

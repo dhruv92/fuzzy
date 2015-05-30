@@ -51,7 +51,7 @@ public class Learning2Rank {
 	  return model;
 	}
 
-	 public static Map<String, List<String>> test(String test_data_file, Classifier model, int task, Map<String,Double> idfs){
+	 public static Map<String, List<String>> test(String test_data_file, Classifier model, int task, Map<String,Double> idfs) throws Exception{
 		 	System.err.println("## Testing with feature_file=" + test_data_file + " ... \n");
 		    Map<String, List<String>> ranked_queries = new HashMap<String, List<String>>();
 		    Learner learner = null;
