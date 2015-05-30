@@ -237,7 +237,7 @@ public class Util {
 			Map<String, Double[]> doc_tfidfs = new HashMap<String, Double[]>();
 			for (Document doc : queryDocMap.get(query)) {
 				Map<String,Map<String, Double>> termFreqs = getDocTermFreqs(doc, query);
-				Double[] instance = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+				Double[] instance = {0.0, 0.0, 0.0, 0.0, 0.0};
 				ArrayList<Double> query_tfidfs = score(termFreqs, query, idfs);
 				for (int i = 0; i < query_tfidfs.size(); i++) {
 					instance[i] = query_tfidfs.get(i);
