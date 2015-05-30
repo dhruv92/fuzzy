@@ -2,11 +2,13 @@ package cs276.pa4;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
 
 
 
@@ -34,13 +36,20 @@ public class PointwiseLearner extends Learner {
 		 */
 
 		/* Build attributes list */
-		Instances dataset = Util.newFieldsDataset();
+		Instances dataset = Util.newFieldsDataset(new String[]{
+				"url_w",
+				"title_w",
+				"body_w",
+				"header_w",
+				"anchor_w",
+				"relevance_score"}, 
+				"train_dataset");
 
 		/* Load training data */
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 
 		/* Calculate score features from training data */
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 
 		/* Load relevance labels */
 		Map<String, Map<String, Double>> relMap = Util.loadRelevanceLabels(train_rel_file);
@@ -78,11 +87,18 @@ public class PointwiseLearner extends Learner {
 			Map<String, Double> idfs) {
 		TestFeatures tester = new TestFeatures();
 		
-		Instances dataset = Util.newFieldsDataset();
+		Instances dataset = Util.newFieldsDataset(new String[]{
+				"url_w",
+				"title_w",
+				"body_w",
+				"header_w",
+				"anchor_w",
+				"relevance_score"}, 
+				"test_dataset");
 		
 		Map<Query,List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
 		
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(dataset, queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
 		
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;
