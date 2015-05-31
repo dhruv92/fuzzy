@@ -168,18 +168,11 @@ public class Learning2Rank {
 	      }
 	    }
 	    
-<<<<<<< HEAD
 	    /* performance on the testing data */
 	    if(!ranked_out_file.equals("")){
 	    	ndcg = new NdcgMain("data/pa4.rel.dev");
 	    	System.err.println("# Test NDCG=" + ndcg.score(ranked_out_file));
 	    }
-=======
-	    /* performance on the training data */
-	    ndcg = new NdcgMain("data/pa4.rel.dev");
-	   // System.err.println("C VALUE: " + c + " GAMMA VALUE: " + gamma);
-	    double score = ndcg.score(ranked_out_file);
-	    System.err.println("# Test NDCG=" + score);
 	    
 	    /*
 	    if (score > maxNDCG) {
@@ -192,8 +185,7 @@ public class Learning2Rank {
 	    }
 	    
 	    System.err.println("BEST C: " + bestC + " BEST GAMMA: " + bestGamma + " BEST NDCG: " + maxNDCG);
-	   */ 
->>>>>>> origin/master
+	   */
 	}
 	
 }
