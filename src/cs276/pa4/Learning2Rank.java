@@ -25,8 +25,8 @@ public class Learning2Rank {
  		if (task == 1) {
 			learner = new PointwiseLearner();
 		} else if (task == 2) {
-		  boolean isLinearKernel = false;
-			learner = new PairwiseLearner(c, gamma, isLinearKernel);
+		  boolean isLinearKernel = true;
+			learner = new PairwiseLearner(c,gamma,isLinearKernel);
 		} else if (task == 3) {
 			
 			/* 
@@ -59,8 +59,8 @@ public class Learning2Rank {
 	 		if (task == 1) {
 				learner = new PointwiseLearner();
 			} else if (task == 2) {
-			  boolean isLinearKernel = false;
-				learner = new PairwiseLearner(c, gamma, isLinearKernel);
+			  boolean isLinearKernel = true;
+				learner = new PairwiseLearner(c,gamma,isLinearKernel);
 			} else if (task == 3) {
 
 				learner = new ComboLearner();
@@ -117,6 +117,7 @@ public class Learning2Rank {
 	    
 	    /* Populate idfs */
 	    String dfFile = "df.txt";
+	    String pwd = "/Users/dhruvamin/Documents/workspace/fuzzy/";
 	    Map<String,Double> idfs = null;
 	    try {
 	      idfs = Util.loadDFs(dfFile);
@@ -141,8 +142,8 @@ public class Learning2Rank {
 	    	for (double gamma : gammaValues) {
 	    		
 	    */
-	    double c = 0.5;
-	    double gamma = 0.015625;
+	    double c = 2.0;
+	    double gamma = 0.5;
 	    
 	    System.err.println("### Running task" + task + "...");		
 	    Classifier model = train(train_data_file, train_rel_file, task, idfs, c, gamma);
@@ -185,7 +186,7 @@ public class Learning2Rank {
 	    }
 	    
 	    System.err.println("BEST C: " + bestC + " BEST GAMMA: " + bestGamma + " BEST NDCG: " + maxNDCG);
-	   */ 
+	    */
 	}
 	
 }

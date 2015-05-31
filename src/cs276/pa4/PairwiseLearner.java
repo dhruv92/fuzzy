@@ -57,11 +57,12 @@ public class PairwiseLearner extends Learner {
 	  for (String query : features.keySet()) {
 		  for (String url : features.get(query).keySet()) {
 			  Double[] instance_D = features.get(query).get(url);
-			  Instance inst = new DenseInstance(instance_D.length+1); //+1 more attribute for the label, which won't be set
+			  Instance inst = new DenseInstance(instance_D.length);
+			  inst.setDataset(stardizationDataset);
 			  for (int i = 0; i < instance_D.length; i++) {
 				  inst.setValue(i, instance_D[i]);
 			  }
-			  //Here I am skipping setting the label. It shouldn't matter when stadardizing
+			  //Here I am skipping setting the label. It shouldn't matter when standardizing
 			  stardizationDataset.add(inst);
 			  positionInDataset.put(query+url,index);
 			  index++;
@@ -102,7 +103,7 @@ public class PairwiseLearner extends Learner {
 			  double secondScore = relMap.get(query).get(pair.getSecond());
 			  if (firstScore - secondScore > 0) {
 				  posDocPairsInstances.put(pair, difference);
-			  } else {
+			  } else if (firstScore - secondScore < 0){
 				  negDocPairsInstances.put(pair, difference);
 			  }
 		  }
@@ -124,9 +125,9 @@ public class PairwiseLearner extends Learner {
 	  int negSize = sizeExampleSet(neg);
 	  
 	  if (posSize > negSize + 1) {
-		  move(pos, neg, features, relMap, (posSize - negSize) / 2, "second");
+		  move(pos, neg, features, relMap, (posSize - negSize) / 2);
 	  } else if (negSize > posSize + 1) {
-		  move(neg, pos, features, relMap, (negSize - posSize) / 2, "first");
+		  move(neg, pos, features, relMap, (negSize - posSize) / 2);
 	  }
   }
   
@@ -134,7 +135,7 @@ public class PairwiseLearner extends Learner {
   private void move(Map<String, Map<Pair<String,String>, Double[]>> from,
 		  Map<String,Map<Pair<String,String>, Double[]>> to, 
 		  Map<String, Map<String, Double[]>> features, 
-		  Map<String, Map<String, Double>> relMap, int number, String desiredResult) {
+		  Map<String, Map<String, Double>> relMap, int number) {
 	  Random r = new Random();
 	  List<String> queries = new ArrayList<String>(from.keySet());
 	  for (int i = 0; i < number; i++) {
@@ -144,9 +145,23 @@ public class PairwiseLearner extends Learner {
 			  ArrayList<Pair<String,String>> keys = new ArrayList<Pair<String, String>>(fromList.keySet());
 			  Pair<String, String> oPair = keys.get(0);
 			  fromList.remove(oPair); // pull it out of original
+			  if (fromList.isEmpty()) { // pull the query out, since the list is empty
+				queries.remove(randQuery);  
+			  	from.remove(randQuery);
+			  }
 			  Pair<String, String> newPair = new Pair<String, String>(oPair.getSecond(), oPair.getFirst());
-			  Double[] difference = diff(features.get(randQuery).get(newPair.getFirst()), features.get(randQuery).get(newPair.getSecond()));
-			  to.get(randQuery).put(newPair, difference); // put it in the new map
+			  Double[] newFirstFeatures = features.get(randQuery).get(newPair.getFirst());
+			  Double[] newSecondFeatures = features.get(randQuery).get(newPair.getSecond());
+			  Double newFirstScore = relMap.get(randQuery).get(newPair.getFirst());
+			  Double newSecondScore = relMap.get(randQuery).get(newPair.getSecond());
+			  Double[] difference = diff(newFirstFeatures, newSecondFeatures);
+			  if (to.containsKey(randQuery)) {
+				  to.get(randQuery).put(newPair, difference); // put it in the new map
+			  } else {
+				  Map<Pair<String, String>, Double[]> queryDocPairs = new HashMap<Pair<String, String>, Double[]>();
+				  queryDocPairs.put(newPair, difference);
+				  to.put(randQuery, queryDocPairs);
+			  }
 		  }
 	  }
   }
@@ -169,7 +184,7 @@ public class PairwiseLearner extends Learner {
   
   /* efficiently generate all pairs, ignore pairs where the relevance score of the documents are the same */
   private List<Pair<String, String>> makeAllPairs(Set<String> docs, String query,  Map<String, Map<String, Double>> relMap) {
-	  List<String> docList = new ArrayList(docs);
+	  List<String> docList = new ArrayList<String>(docs);
 	  List<Pair<String, String>> allPairs = new ArrayList<Pair<String,String>>();
 	  
 	  for (int i = 0; i < docList.size(); i++) {
@@ -192,9 +207,6 @@ public class PairwiseLearner extends Learner {
 	@Override
 	public Instances extract_train_features(String train_data_file,
 			String train_rel_file, Map<String, Double> idfs) throws Exception {
-		/*
-		 * @TODO: Your code here
-		 */
 		
 		/*Build attributes list*/
 		Instances dataset = Util.newPairwiseFieldsDataset("traindataset");
@@ -203,7 +215,7 @@ public class PairwiseLearner extends Learner {
 		Map<Query, List<Document>> queryDocMap = Util.loadQueryDocPairs(train_data_file);
 		
 		/* Calculate score features from training data for each doc */
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs, false);
 		
 		/* Standardize the score features */
 		standardizeFeatures(features);
@@ -225,7 +237,7 @@ public class PairwiseLearner extends Learner {
 				for (int i = 0; i < difference.length; i++) {
 					inst.setValue(i, difference[i]);
 				}
-				inst.setValue(difference.length-1, "first");
+				inst.setValue(difference.length-1, 0); //setting final class value to "first"
 				dataset.add(inst);
 			}
 		}
@@ -238,7 +250,7 @@ public class PairwiseLearner extends Learner {
 				for (int i = 0; i < difference.length; i++) {
 					inst.setValue(i, difference[i]);
 				}
-				inst.setValue(difference.length-1, "second");
+				inst.setValue(difference.length-1, 1); //setting final class value to "second"
 				dataset.add(inst);
 			}
 		}
@@ -270,7 +282,7 @@ public class PairwiseLearner extends Learner {
 		Instances dataset = Util.newPairwiseFieldsDataset("testdataset");
 		
 		Map<Query, List<Document>> queryDocMap = Util.loadQueryDocPairs(test_data_file);
-		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs);
+		Map<String, Map<String, Double[]>> features = Util.getTFIDFs(queryDocMap, idfs, false);
 		standardizeFeatures(features);
 		Map<String, Map<String, Integer>> index_map = new HashMap<String, Map<String, Integer>>();
 		Integer counter = 0;
