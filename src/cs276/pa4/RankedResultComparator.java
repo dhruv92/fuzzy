@@ -5,12 +5,15 @@ import java.util.Comparator;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
 import weka.core.Instance;
+import weka.core.Instances;
 
 public class RankedResultComparator implements Comparator<RankedResult>{
 	private Classifier model;
+	private Instances dataset;
 	
-	public RankedResultComparator(Classifier model) {
+	public RankedResultComparator(Classifier model, Instances dataset) {
 		this.model = model;
+		this.dataset = dataset;
 	}
 	
 	@Override
@@ -24,6 +27,7 @@ public class RankedResultComparator implements Comparator<RankedResult>{
 		}
 		
 		Instance inst = new DenseInstance(1.0, combined_instance);
+		inst.setDataset(dataset);
 		
 		double prediction = 0.0;
 		try {

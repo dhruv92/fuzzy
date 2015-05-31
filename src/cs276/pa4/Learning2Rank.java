@@ -17,7 +17,7 @@ public class Learning2Rank {
 
 	private final static int TOTAL_CORPUS_DOCS = 98998;
 	
-	public static Classifier train(String train_data_file, String train_rel_file, int task, Map<String,Double> idfs) throws Exception {
+	public static Classifier train(String train_data_file, String train_rel_file, int task, Map<String,Double> idfs, double c, double gamma) throws Exception {
 	    System.err.println("## Training with feature_file =" + train_data_file + ", rel_file = " + train_rel_file + " ... \n");
 	    Classifier model = null;
 	    Learner learner = null;
@@ -25,8 +25,8 @@ public class Learning2Rank {
  		if (task == 1) {
 			learner = new PointwiseLearner();
 		} else if (task == 2) {
-		  boolean isLinearKernel = true;
-			learner = new PairwiseLearner(isLinearKernel);
+		  boolean isLinearKernel = false;
+			learner = new PairwiseLearner(c, gamma, isLinearKernel);
 		} else if (task == 3) {
 			
 			/* 
@@ -52,15 +52,15 @@ public class Learning2Rank {
 	  return model;
 	}
 
-	 public static Map<String, List<String>> test(String test_data_file, Classifier model, int task, Map<String,Double> idfs) throws Exception{
+	 public static Map<String, List<String>> test(String test_data_file, Classifier model, int task, Map<String,Double> idfs, double c, double gamma) throws Exception{
 		 	System.err.println("## Testing with feature_file=" + test_data_file + " ... \n");
 		    Map<String, List<String>> ranked_queries = new HashMap<String, List<String>>();
 		    Learner learner = null;
 	 		if (task == 1) {
 				learner = new PointwiseLearner();
 			} else if (task == 2) {
-			  boolean isLinearKernel = true;
-				learner = new PairwiseLearner(isLinearKernel);
+			  boolean isLinearKernel = false;
+				learner = new PairwiseLearner(c, gamma, isLinearKernel);
 			} else if (task == 3) {
 
 				learner = new ComboLearner();
@@ -130,18 +130,32 @@ public class Learning2Rank {
 	    }
 	    
 	    /* Train & test */
+	    /*
+	    double[] cValues = {Math.pow(2,-3), Math.pow(2,-2), Math.pow(2,-1), Math.pow(2,0), Math.pow(2,1), Math.pow(2,2), Math.pow(2,3)};
+	    double[] gammaValues = {Math.pow(2,-7), Math.pow(2,-6), Math.pow(2,-5), Math.pow(2,-4), Math.pow(2,-3), Math.pow(2,-2), Math.pow(2,-1)};
+	    
+	    double bestC = 0;
+	    double bestGamma = 0;
+	    double maxNDCG = 0.0;
+	    for (double c : cValues) {
+	    	for (double gamma : gammaValues) {
+	    		
+	    */
+	    double c = 0.5;
+	    double gamma = 0.015625;
+	    
 	    System.err.println("### Running task" + task + "...");		
-	    Classifier model = train(train_data_file, train_rel_file, task, idfs);
+	    Classifier model = train(train_data_file, train_rel_file, task, idfs, c, gamma);
 
 	    /* performance on the training data */
-	    Map<String, List<String>> trained_ranked_queries = test(train_data_file, model, task, idfs);
+	    Map<String, List<String>> trained_ranked_queries = test(train_data_file, model, task, idfs, c, gamma);
 	    String trainOutFile="tmp.train.ranked";
 	    writeRankedResultsToFile(trained_ranked_queries, new PrintStream(new FileOutputStream(trainOutFile)));
 	    NdcgMain ndcg = new NdcgMain(train_rel_file);
 	    System.err.println("# Trained NDCG=" + ndcg.score(trainOutFile));
 	    (new File(trainOutFile)).delete();
       
-	    Map<String, List<String>> ranked_queries = test(test_data_file, model, task, idfs);
+	    Map<String, List<String>> ranked_queries = test(test_data_file, model, task, idfs, c, gamma);
 	    
 	    /* Output results */
 	    if(ranked_out_file.equals("")){ /* output to stdout */
@@ -154,10 +168,32 @@ public class Learning2Rank {
 	      }
 	    }
 	    
+<<<<<<< HEAD
 	    /* performance on the testing data */
 	    if(!ranked_out_file.equals("")){
 	    	ndcg = new NdcgMain("data/pa4.rel.dev");
 	    	System.err.println("# Test NDCG=" + ndcg.score(ranked_out_file));
 	    }
+=======
+	    /* performance on the training data */
+	    ndcg = new NdcgMain("data/pa4.rel.dev");
+	   // System.err.println("C VALUE: " + c + " GAMMA VALUE: " + gamma);
+	    double score = ndcg.score(ranked_out_file);
+	    System.err.println("# Test NDCG=" + score);
+	    
+	    /*
+	    if (score > maxNDCG) {
+	    	maxNDCG = score;
+	    	bestC = c;
+	    	bestGamma = gamma;
+	    }
+	    
+	    	}
+	    }
+	    
+	    System.err.println("BEST C: " + bestC + " BEST GAMMA: " + bestGamma + " BEST NDCG: " + maxNDCG);
+	   */ 
+>>>>>>> origin/master
 	}
+	
 }
