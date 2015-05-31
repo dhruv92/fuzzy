@@ -106,13 +106,13 @@ public class Learning2Rank {
 	      return;
 	    }
 
-	    String train_data_file = args[0];
-	    String train_rel_file = args[1];
-	    String test_data_file = args[2];
+	    String train_data_file = args[0]; //developed with data/pa4.signal.train
+	    String train_rel_file = args[1]; //developed with data/pa4.rel.train
+	    String test_data_file = args[2]; //developed with data/pa4.rel.dev
 	    int task = Integer.parseInt(args[3]);
 	    String ranked_out_file = "";
 	    if (args.length == 5){
-	      ranked_out_file = args[4];
+	      ranked_out_file = args[4]; //should be "ranked.txt"
 	    }
 	    
 	    /* Populate idfs */
@@ -169,12 +169,12 @@ public class Learning2Rank {
 	      }
 	    }
 	    
-	    /* performance on the training data */
-	    ndcg = new NdcgMain("data/pa4.rel.dev");
-	   // System.err.println("C VALUE: " + c + " GAMMA VALUE: " + gamma);
-	    double score = ndcg.score(ranked_out_file);
-	    System.err.println("# Test NDCG=" + score);
-	    
+	    /* performance on the testing data */
+	    if(!ranked_out_file.equals("")){
+	    	ndcg = new NdcgMain("data/pa4.rel.dev");
+	    	System.err.println("# Test NDCG=" + ndcg.score(ranked_out_file));
+	    	
+	    }
 	    /*
 	    if (score > maxNDCG) {
 	    	maxNDCG = score;
@@ -186,7 +186,7 @@ public class Learning2Rank {
 	    }
 	    
 	    System.err.println("BEST C: " + bestC + " BEST GAMMA: " + bestGamma + " BEST NDCG: " + maxNDCG);
-	    */
+		*/
 	}
 	
 }
